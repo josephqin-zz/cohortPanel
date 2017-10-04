@@ -9,7 +9,10 @@ module.exports = {
 	output:{
 		// library:'cohortPanel',
 		path:OUTPUT,
+		library:'testModule',
+		libraryTarget:'umd',
 		filename:'playGround.js'
+
 	},
 	module:{
 		loaders:[{

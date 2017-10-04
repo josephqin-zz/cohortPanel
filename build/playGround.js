@@ -1,4 +1,14 @@
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["testModule"] = factory();
+	else
+		root["testModule"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -1251,6 +1261,8 @@ module.exports = checkPropTypes;
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _react = __webpack_require__(3);
 
 var _react2 = _interopRequireDefault(_react);
@@ -1261,11 +1273,104 @@ var _reactDom2 = _interopRequireDefault(_reactDom);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(
-	'h1',
-	null,
-	'Hello, World'
-), document.getElementById('root'));
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var ChildOneNode = function (_React$Component) {
+	_inherits(ChildOneNode, _React$Component);
+
+	function ChildOneNode(props) {
+		_classCallCheck(this, ChildOneNode);
+
+		var _this = _possibleConstructorReturn(this, (ChildOneNode.__proto__ || Object.getPrototypeOf(ChildOneNode)).call(this, props));
+
+		_this.state = { content: 'i am childOne' };
+		_this.handleClick = _this.props.fnfromparen;
+		return _this;
+	}
+
+	_createClass(ChildOneNode, [{
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement(
+				'button',
+				{ onClick: this.handleClick },
+				'test1'
+			);
+		}
+	}]);
+
+	return ChildOneNode;
+}(_react2.default.Component);
+
+var ChildTwoNode = function (_React$Component2) {
+	_inherits(ChildTwoNode, _React$Component2);
+
+	function ChildTwoNode(props) {
+		_classCallCheck(this, ChildTwoNode);
+
+		var _this2 = _possibleConstructorReturn(this, (ChildTwoNode.__proto__ || Object.getPrototypeOf(ChildTwoNode)).call(this, props));
+
+		_this2.state = { content: 'i am childTwo' };
+		_this2.handleClick = _this2.props.fnfromparen.bind(_this2);
+		return _this2;
+	}
+
+	_createClass(ChildTwoNode, [{
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement(
+				'button',
+				{ onClick: this.handleClick },
+				'test2'
+			);
+		}
+	}]);
+
+	return ChildTwoNode;
+}(_react2.default.Component);
+
+var ParentNode = function (_React$Component3) {
+	_inherits(ParentNode, _React$Component3);
+
+	function ParentNode(props) {
+		_classCallCheck(this, ParentNode);
+
+		var _this3 = _possibleConstructorReturn(this, (ParentNode.__proto__ || Object.getPrototypeOf(ParentNode)).call(this, props));
+
+		_this3.state = { content: 'I am parent'
+			// this.handlerFn = this.handlerFn.bind(this);
+		};return _this3;
+	}
+
+	_createClass(ParentNode, [{
+		key: 'handlerFn',
+		value: function handlerFn() {
+			console.log(this.state.content);
+		}
+	}, {
+		key: 'render',
+		value: function render() {
+			return _react2.default.createElement(
+				'div',
+				null,
+				_react2.default.createElement(ChildOneNode, { fnfromparen: this.handlerFn }),
+				_react2.default.createElement(ChildTwoNode, { fnfromparen: this.handlerFn })
+			);
+		}
+	}]);
+
+	return ParentNode;
+}(_react2.default.Component);
+
+var renderModule = function renderModule(node) {
+	_reactDom2.default.render(_react2.default.createElement(ParentNode, null), node);
+};
+
+module.exports = renderModule;
 
 /***/ }),
 /* 21 */
@@ -21554,3 +21659,4 @@ module.exports = function() {
 
 /***/ })
 /******/ ]);
+});
