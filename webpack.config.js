@@ -5,13 +5,13 @@ var SRC = path.resolve(__dirname, "src");
 var OUTPUT = path.resolve(__dirname, "build");
 
 module.exports = {
-	entry: SRC+"/playGround.jsx",
+	entry: SRC+"/index.jsx",
 	output:{
 		// library:'cohortPanel',
 		path:OUTPUT,
-		library:'testModule',
+		library:'cohortPanel',
 		libraryTarget:'umd',
-		filename:'playGround.js'
+		filename:'cohortPanel.js'
 
 	},
 	module:{

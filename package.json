@@ -4,12 +4,14 @@
   "description": "cohortpanel module",
   "main": "index.js",
   "scripts": {
+    "start": "NODE_PATH=src react-scripts start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/josephqin/cohortPanel.git"
   },
+  
   "author": "joseph@agios",
   "license": "ISC",
   "bugs": {
