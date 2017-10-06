@@ -8,16 +8,17 @@ export default class Canvas extends React.Component{
     }
 
     handlerMouseOver(e){
-    	e.preventDefault();
+    	
     	console.log(e);
+        
     	
     }
 
     render(){
-		const atomList= this.props.dataset.map((p,i)=><Vatom key={i} location={p.location}  onClick={this.handlerMouseOver} shape={p.shape}/>)
-		return <svg width={this.props.width} height={this.props.height}>
+		const atomList= this.props.dataset.map((p,i)=><Vatom key={i} location={p.location} onHighlight={this.handlerMouseOver}  shape={p.shape}/>)
+		return <svg width={this.props.width} height={this.props.height} >
 					<g>
-					{atomList}
+					   {atomList}
 					</g>
 		       </svg>;
 	}
