@@ -30,10 +30,13 @@
 
        nodes = dataSet.map((t,i)=>{
        	let item = {};
+       	item.label = t.metabolite;
        	item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
-       	item.shape={d:drawCircle(5),fill:color(t.mean_ratio*t.logPval)}
+       	item.shape={d:drawCircle(5),fill:color(t.mean_ratio*t.logPval),stroke:'#ffffff','strokeWidth':'1px'}
        	return item
        })
+
+       
        cohortPanel.bindData(nodes)(d3.select('#root').node()); 
      
        
