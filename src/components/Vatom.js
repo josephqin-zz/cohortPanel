@@ -4,10 +4,12 @@ export default class Vatom extends React.Component{
     
     componentDidMount() {
         this.vatom.addEventListener('mouseover', this.props.onHighlight);
+        this.vatom.addEventListener('click',this.props.onClick);
     }
 
     componentWillUnmount(){
         this.vatom.removeEventListener('mouseover', this.props.onHighlight);
+        this.vatom.removeEventListener('click',this.props.onClick);
     }
 
    	render(){

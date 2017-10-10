@@ -15,7 +15,7 @@ export default class Canvas extends React.Component{
     }
 
     render(){
-		const atomList= this.props.dataset.map((p,i)=><Vatom key={i} onHighlight={this.handlerHighlight.bind(this,i)} {...p} showLabel={this.state.showLabel===i}/>)
+		const atomList= this.props.dataset.map((p)=><Vatom key={p.id} onHighlight={this.handlerHighlight.bind(this,p.id)} onClick = { ()=>this.props.onClick(p.id) } {...p} showLabel={this.state.showLabel===p.id}/>)
 		return <svg width={this.props.width} height={this.props.height} >
 					<g>
 					   {atomList}
