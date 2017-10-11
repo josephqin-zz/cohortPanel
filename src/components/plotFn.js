@@ -3,24 +3,30 @@ import {keggMap} from './keggMap';
 
 const margin = {left:20,right:20,top:20,bottom:20};
 
+var drawCircle = (radius) => 'M '+(0-radius)+' '+0+' a '+radius+' '+radius+', 0, 1, 0, '+(radius*2)+' '+0+' '+'a '+radius+' '+radius+', 0, 1, 0, '+(-radius*2)+' '+0;
+var drawLine = (range,direction) => 'M 0,0 '+direction+' '+Math.abs(range[1]-range[0]);
 
-var axisFn = function(ticks,scalefn,x=true){
+var axisFn = function(ticks,scalefn,position,xaxis=true,name=null){
+    
     let pointfn = d3.scalePoint().range(scalefn.range()).domain(d3.range(ticks));
-    return d3.range(ticks).map((t)=>{
+    
+    let axis = {key:'axis',label:name,location:{x:scalefn.range()[0],y:position},shape:{d:drawLine(scalefn.range(),'h'),stroke:'#000000',strokeWidth:'1px'}}
+
+    return [...d3.range(ticks).map((t)=>{
       let item = {}
-      item.key = (x?'xaxis':'yaix')+t;
-      item.location = {x:pointfn(t),y:20}
+      item.key = (x?'xaxis':'yaixs')+t;
+      item.location = {x:pointfn(t),y:position}
       item.label = scalefn.invert(pointfn(t))
-      item.shape = {d:'M 0,0 L 0,10',stroke:'#000000',strokeWidth:'2px'}
+      item.shape = {d:'M 0,0 L 0,10',stroke:'#000000',strokeWidth:'1px'}
       return item;
-    })
+    }),axis]
 
 
 }
 
 
 
-var drawCircle = (radius) => 'M '+(0-radius)+' '+0+' a '+radius+' '+radius+', 0, 1, 0, '+(radius*2)+' '+0+' '+'a '+radius+' '+radius+', 0, 1, 0, '+(-radius*2)+' '+0;
+
 
 var getNode = function(peakids,vals,cohort){
       let peakid = peakids.split(',');
@@ -52,8 +58,8 @@ export var keggPlot = function(metaData,width,height){
         let xMin = d3.min(dataSet.map((d)=>+d.x));
         let yMax = d3.max(dataSet.map((d)=>+d.y));
         let yMin = d3.min(dataSet.map((d)=>+d.y));
-        let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]).nice();
-        let yFn = d3.scaleLinear().range([top,bottom]).domain([yMin,yMax]).nice();
+        let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]);
+        let yFn = d3.scaleLinear().range([top,bottom]).domain([yMin,yMax]);
 
         return keggMap.map((g,i)=>{
            let item = {}
@@ -95,13 +101,13 @@ export var volcanoPlot = function(plotData,width,height){
        let xMin = d3.min(plotData.map((d)=>d.mean_ratio));
        let yMax = d3.max(plotData.map((d)=>d.logPval));
        let yMin = d3.min(plotData.map((d)=>d.logPval));
-       let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]).nice();
-       let yFn = d3.scaleLinear().range([bottom,top]).domain([yMin,yMax]).nice();
+       let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]);
+       let yFn = d3.scaleLinear().range([bottom,top]).domain([0,yMax]);
        let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
        
        //vocalno plot need 0 references line 
-       let refline = {key:'vline',location:{x:xFn(0),y:yFn(yMin)},shape:{d:'M 0,'+top+' L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }}
-       let xaxis = axisFn(10,xFn);
+       let refline = {key:'vline',location:{x:xFn(0),y:bottom},shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }}
+       let xaxis = axisFn(10,xFn,bottom);
        return [refline,...plotData.map((t)=>{
         let item = {};
         item.key = 'v'+t.id;
@@ -157,8 +163,8 @@ export var scatterPlot = function(plotData,width,height){
     let Xmax = d3.max(plotData.map((d)=>d3.max(d.values.map((t)=>(t.x)))))
     let Ymin = d3.min(plotData.map((d)=>d3.min(d.values.map((t)=>(t.y)))))
     let Ymax = d3.max(plotData.map((d)=>d3.max(d.values.map((t)=>(t.y)))))
-    let xScale = d3.scaleLinear().range([left,right]).domain([Xmin,Xmax]).nice();
-    let yScale = d3.scaleLinear().range([bottom,top]).domain([Ymin,Ymax]).nice();
+    let xScale = d3.scaleLinear().range([left,right]).domain([Xmin,Xmax]);
+    let yScale = d3.scaleLinear().range([bottom,top]).domain([Ymin,Ymax]);
 
     let color = d3.scaleOrdinal().range(d3.schemeCategory20);
     let lineFunction = d3.line()
