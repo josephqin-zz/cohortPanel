@@ -21,7 +21,7 @@ var renderModule = function(node){
     
 	ReactDom.render(
 	<Cohortpanel width={width} height ={height} dataset={cleandata} />,
-	node
+	node.node()
 	)
 };
 

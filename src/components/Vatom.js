@@ -14,11 +14,13 @@ export default class Vatom extends React.Component{
 
    	render(){
 
-		const textStyle = { dominantBaseline:'hanging',textAnchor:'start', fontSize:'.5em',fill:'#000000'}
+		const textStyle = !this.props.tick?{ dominantBaseline:'hanging',textAnchor:'start', fontSize:'.6em',fill:'#000000'}:this.props.tick;
+        
         const content = this.props.label
 		return <g ref={ref=>this.vatom = ref} transform={"translate ("+this.props.location.x+','+this.props.location.y+")"}>
 				 <path {...this.props.shape} />
-				 { this.props.showLabel && <text style={textStyle}> {content} </text> } 
+				 { (this.props.tick || this.props.showLabel) && <text {...textStyle}> {content} </text> }
+				  
 		       </g>;  
 	}
 }

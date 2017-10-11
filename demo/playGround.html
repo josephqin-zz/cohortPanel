@@ -12,13 +12,12 @@
   <div id='root'></div>
   <!-- <div id='root2'></div> -->
   <script>
-  	const cwidth = 800;
-  	const cheight =400;
-  
+  	  
 
-    d3.json('dataset_cohort_pairwise.txt',function(data){         
-    		cohortPanel.setHeight(500).setWidth(1000).bindData(data)(d3.select('#root').node());
-    		console.log(data);
+    d3.json('dataset_cohort_pairwise.txt',function(data){ 
+            var cohortPanelFn = cohortPanel.setHeight(400).setWidth(800);       
+    		d3.select('#root').call(cohortPanelFn.bindData(data));
+    		
     })
   </script>
   
