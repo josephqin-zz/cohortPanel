@@ -52,6 +52,7 @@ var getNode = function(peakids,vals,cohort){
       return peakid.map((d,i)=>{
           let item = {};
           item.x = cohort;
+          item.type = 'sample';
           item.id = +d;
           item.y = +val[i];
           return item;
@@ -82,6 +83,7 @@ export var keggPlot = function(metaData,width,height){
            let item = {}
            let nodeDetail = metaData.filter((d)=>d.kegg_id===g.name)
            item.key = 'k'+i;
+           item.type = nodeDetail.length>0?nodeDetail[0].type:'null';
            item.id = nodeDetail.length>0?nodeDetail[0].id:g.name;
            item.label = g.type === 'line'?null:g.name
            item.location= {x:0,y:0}
@@ -93,6 +95,7 @@ export var keggPlot = function(metaData,width,height){
               let Ycoords = coords.filter(function(c,i){return i%2 != 0 }).map((d)=>yFn(+d))
               item.shape={d:"M"+Xcoords.map(function(d,i){return d+","+Ycoords[i] }).join(" L"),stroke:g.fgcolor,strokeWidth:'1px',fill:'none'}             
           }else{
+
               item.location={x:xFn(+g.x),y:yFn(+g.y)};
               item.shape={d:drawCircle(nodeDetail.length>0?pFn(nodeDetail[0].logPval):1),fill:g.bgcolor,stroke:g.fgcolor,strokeWidth:'1px'}
           }
@@ -129,6 +132,7 @@ export var volcanoPlot = function(plotData,width,height){
         let item = {};
         item.key = 'v'+t.id;
         item.id = t.id;
+        item.type = t.type;
         item.label = t.metabolite;
         item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
         item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio*t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
@@ -187,6 +191,7 @@ export var scatterPlot = function(plotData,width,height){
       let item = {}
       item.key = t.id;
       item.id = t.id;
+      item.type = t.type;
       item.label = t.id;
       item.location= {x:xFn(t.id),y:yFn(t.y)}
       item.shape={d:drawCircle(circle_ratio),fill:color(t.id),strokeWidth:'1px'}

@@ -4,19 +4,20 @@
 <head>
   <meta charset="utf-8" />
   <script src='http://d3js.org/d3.v4.js'></script>
-  <script src="../build/cohortPanel.js"></script>
+  <script src="../build/cohortPanelV2.js"></script>
   <title></title>
 </head>
  
 <body>
   <div id='root'></div>
-  <!-- <div id='root2'></div> -->
+  <div id='root2'></div>
   <script>
   	  
 
     d3.json('dataset_cohort_pairwise.txt',function(data){ 
             var cohortPanelFn = cohortPanel.setHeight(400).setWidth(800);       
     		d3.select('#root').call(cohortPanelFn.bindData(data));
+    		d3.select('#root2').call(cohortPanelFn.bindData(data).setType('kegg'));
     		
     })
   </script>

@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import Cohortpanel from './components/Cohortpanel'
+import Cohortpanel from './components/CohortpanelV2'
 
 
 var width = 1000,
 	height = 500,
+	plotType = 'volcano',
 	dataset = new Array;
 
 
@@ -15,12 +16,13 @@ var renderModule = function(node){
 		let item = {};
 		Object.assign(item,d);
 		item.id = i;
+		item.type = 'metabolite';
 		return item;
 	});
     	
     
 	ReactDom.render(
-	<Cohortpanel width={width} height ={height} dataset={cleandata} />,
+	<Cohortpanel width={width} height ={height} dataset={cleandata} defaultType={plotType} />,
 	node.node()
 	)
 };
@@ -41,6 +43,12 @@ renderModule.setHeight = function(data){
 renderModule.setWidth = function(data){
 	if(!arguments.length) return dataset;
 	width = data;
+	return this;
+}
+
+renderModule.setType = function(data){
+	if(!arguments.length) return plotType;
+	plotType = data;
 	return this;
 }
 

@@ -66,7 +66,7 @@ export default class Cohortpanel extends React.Component {
 	}
 
 	forwardClickHandler(d){
-		if(this.state.phase.length<3){this.getnewPlot([...this.state.phase,d])}
+		if(this.state.phase.length<3){this.getnewPlot([...this.state.phase,d.id])}
 		
 	}
     switchClickHandler(){

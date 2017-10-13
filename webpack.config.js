@@ -11,7 +11,7 @@ module.exports = {
 		path:OUTPUT,
 		library:'cohortPanel',
 		libraryTarget:'umd',
-		filename:'cohortPanel.js'
+		filename:'cohortPanelV2.js'
 
 	},
 	module:{
