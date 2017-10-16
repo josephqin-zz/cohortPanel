@@ -12,7 +12,7 @@ var width = 1000,
 
 var renderModule = function(node){
 
-	const cleandata = dataset.filter((d)=>d.logPval!==null).map((d,i)=>{
+	const cleandata = dataset.filter((d)=>d.logPval!==null && !isNaN(d.logPval) ).map((d,i)=>{
 		let item = {};
 		Object.assign(item,d);
 		item.id = i;
