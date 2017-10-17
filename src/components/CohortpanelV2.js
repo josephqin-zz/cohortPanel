@@ -19,7 +19,7 @@ export default class Cohortpanel extends React.Component {
     let metadata = this.props.dataset;
 		let plotData = {};
     if(d.type==='metabolite'){
-         plotData.title = 'scatter plot';
+         plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' +metadata[d.id].kegg_id+')' ;
          plotData.data = scatterPlot(metadata[d.id],this.props.width,this.props.height);
          this.setState({plots:[this.defaultPlot,plotData]});
     }else{
@@ -33,10 +33,11 @@ export default class Cohortpanel extends React.Component {
                    let y = d.eic_intensity.split(',').map((d)=>Number(d))
                    line.values = x.map((t,i)=>{
                     return {x:t,y:y[i]}
-                  }).filter((c)=>c.x>=Number(d.min_rt)&&c.x<=Number(d.max_rt))
+                  }).filter((c)=>c.x>=Number(d.min_rt)&&c.x<=Number(d.max_rt));
+                   line.ref = d.rt;
                    return line;
                 });
-                plotData.title = 'Chromatogram';
+                plotData.title = 'Chromatogram' + ' Peak ID: '+res.data.data.values[0].peak_id;
                 plotData.data = linePlot(lines,this.props.width,this.props.height);
                 this.setState((prestate)=>({plots:[...prestate.plots.filter((d,i)=>i<2),plotData]}))
 
@@ -48,7 +49,7 @@ export default class Cohortpanel extends React.Component {
 	render(){
 
     const plotsData = this.state.plots.map((plot,index)=><div key={index}>
-             <h2 id='title'>{ plot.title }</h2>
+             <h3 id='title'>{ plot.title }</h3>
              <Canvas width={this.props.width} height ={this.props.height} dataset={plot.data} onClick={this.forwardClickHandler.bind(this)}/>
              </div>
         );

@@ -1,14 +1,11 @@
-import React from 'react';
-import ReactDom from 'react-dom';
-import Cohortpanel from './components/CohortpanelV2'
+import * as d3 from "d3";
+import cohortPanel from './d3components/cohortPanel'
 
 
 var width = 1000,
 	height = 500,
 	plotType = 'volcano',
 	dataset = new Array;
-
-
 
 var renderModule = function(node){
 
@@ -20,11 +17,11 @@ var renderModule = function(node){
 		return item;
 	});
     	
-    
-	ReactDom.render(
-	<Cohortpanel width={width} height ={height} dataset={cleandata} defaultType={plotType} />,
-	node.node()
-	)
+  	node.append('svg')
+  		.attr('width',width)
+  		.attr('height',height)
+  		.call(cohortPanel.bindData(cleandata).setType(plotType).setWidth(width).setHeight(height))
+	
 };
 
 renderModule.bindData = function(data){
@@ -53,7 +50,7 @@ renderModule.setType = function(data){
 }
 
 renderModule.remove = function(node){
-	ReactDom.unmountComponentAtNode(node.node());
+	node.selectAll('*').remove();
 }
 
 module.exports = renderModule;

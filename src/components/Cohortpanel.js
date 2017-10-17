@@ -79,7 +79,7 @@ export default class Cohortpanel extends React.Component {
        
 		return (<div>
 			        { this.state.phase.length === 1 && <button onClick={this.switchClickHandler.bind(this)}> { this.state.phase[0]===0?'Keeg Map':'Volcano Plot' }   </button>}
-					<h2 id='title'>{ this.state.phase.length > 1 && <button onClick={this.backwardClickHandler.bind(this) }>  { '<<' }</button>} { this.state.plot.title }</h2>
+					<h3 id='title'>{ this.state.phase.length > 1 && <button onClick={this.backwardClickHandler.bind(this) }>  { '<<' }</button>} { this.state.plot.title }</h3>
 					<Canvas width={this.props.width} height ={this.props.height} dataset={this.state.plot.data} onClick={this.forwardClickHandler.bind(this)}/>
 			   </div>)
 

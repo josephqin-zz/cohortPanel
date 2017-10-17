@@ -68,8 +68,10 @@ export var keggPlot = function(metaData,width,height){
 
         let pMax = d3.max(metaData.map((d)=>d.logPval));
         let pMin = d3.min(metaData.map((d)=>d.logPval));
+        let rMax = d3.max(metaData.map((d)=>d.mean_ratio));
+        let rMin = d3.min(metaData.map((d)=>d.mean_ratio));
         let pFn = d3.scaleSqrt().range([2,5]).domain([pMin,pMax]).nice();
-
+        let color = d3.scaleLinear().range(["blue","red"]).domain([rMin,rMax]);
         
         let dataSet = keggMap.filter((d)=>d.type==='circle')
         let xMax = d3.max(dataSet.map((d)=>+d.x));
@@ -79,13 +81,14 @@ export var keggPlot = function(metaData,width,height){
         let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]);
         let yFn = d3.scaleLinear().range([top,bottom]).domain([yMin,yMax]);
 
+
         return keggMap.map((g,i)=>{
            let item = {}
            let nodeDetail = metaData.filter((d)=>d.kegg_id===g.name)
            item.key = 'k'+i;
            item.type = nodeDetail.length>0?nodeDetail[0].type:'null';
            item.id = nodeDetail.length>0?nodeDetail[0].id:g.name;
-           item.label = g.type === 'line'?null:g.name
+           item.label = ( g.type !== 'line' && nodeDetail.length>0 )?['name :'+nodeDetail[0].metabolite,'Kegg_id:'+nodeDetail[0].kegg_id,'mean_ration :'+nodeDetail[0].mean_ratio,'logPValue :'+nodeDetail[0].logPval].join(';'):null;
            item.location= {x:0,y:0}
            
               
@@ -97,7 +100,7 @@ export var keggPlot = function(metaData,width,height){
           }else{
 
               item.location={x:xFn(+g.x),y:yFn(+g.y)};
-              item.shape={d:drawCircle(nodeDetail.length>0?pFn(nodeDetail[0].logPval):1),fill:g.bgcolor,stroke:g.fgcolor,strokeWidth:'1px'}
+              item.shape={d:drawCircle(nodeDetail.length>0?pFn(nodeDetail[0].logPval):1),fill:nodeDetail.length>0?color(nodeDetail[0].mean_ratio):g.fgcolor,stroke:nodeDetail.length>0?color(nodeDetail[0].mean_ratio):g.fgcolor,strokeWidth:'1px'}
           }
 
 
@@ -133,7 +136,7 @@ export var volcanoPlot = function(plotData,width,height){
         item.key = 'v'+t.id;
         item.id = t.id;
         item.type = t.type;
-        item.label = t.metabolite;
+        item.label = ['name :'+t.metabolite,'Kegg_id:'+t.kegg_id,'mean_ration :'+t.mean_ratio,'logPValue :'+t.logPval].join(';');
         item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
         item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio*t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
         return item
@@ -218,9 +221,12 @@ export var scatterPlot = function(plotData,width,height){
                                .x(function (d) {return xScale(d.x);})
                                .y(function (d) {return yScale(d.y);})
                                .curve(d3.curveMonotoneX);
-
+    let refline = plotData.map((d)=>{return {key:'vline',location:{x:xScale(d.ref),y:bottom},shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }}})
     let axis = [...axisFn(10,xScale,bottom,true,'rt'),...axisFn(10,yScale,left,false,'intensity')];
-    return [...plotData.map((t)=>{
+    
+
+
+    return [...refline,...plotData.map((t)=>{
       let item = {}
       item.key = t.id;
       item.id = t.id
@@ -229,5 +235,5 @@ export var scatterPlot = function(plotData,width,height){
       item.shape={d:lineFunction(t.values),stroke:color(t.id),strokeWidth:'2px',fill:'none'}
       return item;
       
-    }),...axis]
+    }),...axis,]
   }

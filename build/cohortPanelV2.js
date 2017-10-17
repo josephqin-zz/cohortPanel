@@ -10908,7 +10908,7 @@ var width = 1000,
 var renderModule = function renderModule(node) {
 
 	var cleandata = dataset.filter(function (d) {
-		return d.logPval !== null;
+		return d.logPval !== null && !isNaN(d.logPval);
 	}).map(function (d, i) {
 		var item = {};
 		Object.assign(item, d);
@@ -10942,6 +10942,10 @@ renderModule.setType = function (data) {
 	if (!arguments.length) return plotType;
 	plotType = data;
 	return this;
+};
+
+renderModule.remove = function (node) {
+	_reactDom2.default.unmountComponentAtNode(node.node());
 };
 
 module.exports = renderModule;
@@ -31291,7 +31295,7 @@ var Cohortpanel = function (_React$Component) {
       var metadata = this.props.dataset;
       var plotData = {};
       if (d.type === 'metabolite') {
-        plotData.title = 'scatter plot';
+        plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' + metadata[d.id].kegg_id + ')';
         plotData.data = (0, _plotFn.scatterPlot)(metadata[d.id], this.props.width, this.props.height);
         this.setState({ plots: [this.defaultPlot, plotData] });
       } else {
@@ -31311,9 +31315,10 @@ var Cohortpanel = function (_React$Component) {
             }).filter(function (c) {
               return c.x >= Number(d.min_rt) && c.x <= Number(d.max_rt);
             });
+            line.ref = d.rt;
             return line;
           });
-          plotData.title = 'Chromatogram';
+          plotData.title = 'Chromatogram' + ' Peak ID: ' + res.data.data.values[0].peak_id;
           plotData.data = (0, _plotFn.linePlot)(lines, _this2.props.width, _this2.props.height);
           _this2.setState(function (prestate) {
             return { plots: [].concat(_toConsumableArray(prestate.plots.filter(function (d, i) {
@@ -31333,7 +31338,7 @@ var Cohortpanel = function (_React$Component) {
           'div',
           { key: index },
           _react2.default.createElement(
-            'h2',
+            'h3',
             { id: 'title' },
             plot.title
           ),
@@ -31391,27 +31396,26 @@ var Canvas = function (_React$Component) {
     function Canvas(props) {
         _classCallCheck(this, Canvas);
 
-        var _this = _possibleConstructorReturn(this, (Canvas.__proto__ || Object.getPrototypeOf(Canvas)).call(this, props));
-
-        _this.state = { showLabel: -1 };
-        return _this;
+        return _possibleConstructorReturn(this, (Canvas.__proto__ || Object.getPrototypeOf(Canvas)).call(this, props));
+        // this.state = {showLabel:-1}
     }
 
-    _createClass(Canvas, [{
-        key: 'handlerHighlight',
-        value: function handlerHighlight(d) {
+    // handlerHighlight(d){
 
-            this.setState({ showLabel: d });
-        }
-    }, {
+    // 	this.setState({showLabel:d})
+
+
+    // }
+
+    _createClass(Canvas, [{
         key: 'render',
         value: function render() {
             var _this2 = this;
 
             var atomList = this.props.dataset.map(function (p) {
-                return _react2.default.createElement(_Vatom2.default, _extends({ key: p.key, onHighlight: _this2.handlerHighlight.bind(_this2, p.key), onClick: function onClick() {
+                return _react2.default.createElement(_Vatom2.default, _extends({ key: p.key, onClick: function onClick() {
                         return _this2.props.onClick(p);
-                    } }, p, { showLabel: _this2.state.showLabel === p.key }));
+                    } }, p));
             });
             return _react2.default.createElement(
                 'svg',
@@ -31458,23 +31462,38 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Vatom = function (_React$Component) {
     _inherits(Vatom, _React$Component);
 
-    function Vatom() {
+    function Vatom(props) {
         _classCallCheck(this, Vatom);
 
-        return _possibleConstructorReturn(this, (Vatom.__proto__ || Object.getPrototypeOf(Vatom)).apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, (Vatom.__proto__ || Object.getPrototypeOf(Vatom)).call(this, props));
+
+        _this.state = { x: null, y: null };
+        return _this;
     }
 
     _createClass(Vatom, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            this.vatom.addEventListener('mouseover', this.props.onHighlight);
+            this.vatom.addEventListener('mouseover', this.onHighlight.bind(this));
+            this.vatom.addEventListener('mouseout', this.offHighlight.bind(this));
             this.vatom.addEventListener('click', this.props.onClick);
         }
     }, {
         key: 'componentWillUnmount',
         value: function componentWillUnmount() {
-            this.vatom.removeEventListener('mouseover', this.props.onHighlight);
+            this.vatom.removeEventListener('mouseover', this.onHighlight.bind(this));
+            this.vatom.removeEventListener('mouseout', this.offHighlight.bind(this));
             this.vatom.removeEventListener('click', this.props.onClick);
+        }
+    }, {
+        key: 'onHighlight',
+        value: function onHighlight(e) {
+            this.setState({ x: e.offsetX, y: e.offsetY });
+        }
+    }, {
+        key: 'offHighlight',
+        value: function offHighlight(e) {
+            this.setState({ x: null, y: null });
         }
     }, {
         key: 'render',
@@ -31483,19 +31502,36 @@ var Vatom = function (_React$Component) {
 
             var textStyle = !this.props.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : this.props.tick;
 
-            var content = this.props.label;
+            var content = this.state.x && this.props.label ? this.props.label.toString().split(';').map(function (c, i) {
+                return _react2.default.createElement(
+                    'tspan',
+                    { key: i, x: _this2.state.x, y: _this2.state.y + 10 * i },
+                    c
+                );
+            }) : null;
             return _react2.default.createElement(
                 'g',
                 { ref: function ref(_ref) {
                         return _this2.vatom = _ref;
-                    }, transform: "translate (" + this.props.location.x + ',' + this.props.location.y + ")" },
-                _react2.default.createElement('path', this.props.shape),
-                (this.props.tick || this.props.showLabel) && _react2.default.createElement(
+                    } },
+                _react2.default.createElement(
+                    'g',
+                    { transform: "translate (" + this.props.location.x + ',' + this.props.location.y + ")" },
+                    _react2.default.createElement('path', this.props.shape),
+                    this.props.tick && _react2.default.createElement(
+                        'text',
+                        textStyle,
+                        ' ',
+                        this.props.label,
+                        ' '
+                    )
+                ),
+                !this.props.tick && _react2.default.createElement(
                     'text',
                     textStyle,
                     ' ',
                     content,
-                    ' '
+                    '  '
                 )
             );
         }
@@ -31600,7 +31636,14 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
     var pMin = d3.min(metaData.map(function (d) {
         return d.logPval;
     }));
+    var rMax = d3.max(metaData.map(function (d) {
+        return d.mean_ratio;
+    }));
+    var rMin = d3.min(metaData.map(function (d) {
+        return d.mean_ratio;
+    }));
     var pFn = d3.scaleSqrt().range([2, 5]).domain([pMin, pMax]).nice();
+    var color = d3.scaleLinear().range(["blue", "red"]).domain([rMin, rMax]);
 
     var dataSet = _keggMap.keggMap.filter(function (d) {
         return d.type === 'circle';
@@ -31628,7 +31671,7 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
         item.key = 'k' + i;
         item.type = nodeDetail.length > 0 ? nodeDetail[0].type : 'null';
         item.id = nodeDetail.length > 0 ? nodeDetail[0].id : g.name;
-        item.label = g.type === 'line' ? null : g.name;
+        item.label = g.type !== 'line' && nodeDetail.length > 0 ? ['name :' + nodeDetail[0].metabolite, 'Kegg_id:' + nodeDetail[0].kegg_id, 'mean_ration :' + nodeDetail[0].mean_ratio, 'logPValue :' + nodeDetail[0].logPval].join(';') : null;
         item.location = { x: 0, y: 0 };
 
         if (g.type === 'line') {
@@ -31649,7 +31692,7 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
         } else {
 
             item.location = { x: xFn(+g.x), y: yFn(+g.y) };
-            item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: g.bgcolor, stroke: g.fgcolor, strokeWidth: '1px' };
+            item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, stroke: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, strokeWidth: '1px' };
         }
 
         return item;
@@ -31689,7 +31732,7 @@ var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, he
         item.key = 'v' + t.id;
         item.id = t.id;
         item.type = t.type;
-        item.label = t.metabolite;
+        item.label = ['name :' + t.metabolite, 'Kegg_id:' + t.kegg_id, 'mean_ration :' + t.mean_ratio, 'logPValue :' + t.logPval].join(';');
         item.location = { x: xFn(t.mean_ratio), y: yFn(t.logPval) };
         item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio * t.logPval), stroke: '#ffffff', strokeWidth: '1px' };
         return item;
@@ -31794,9 +31837,12 @@ var linePlot = exports.linePlot = function linePlot(plotData, width, height) {
     }).y(function (d) {
         return yScale(d.y);
     }).curve(d3.curveMonotoneX);
-
+    var refline = plotData.map(function (d) {
+        return { key: 'vline', location: { x: xScale(d.ref), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
+    });
     var axis = [].concat(_toConsumableArray(axisFn(10, xScale, bottom, true, 'rt')), _toConsumableArray(axisFn(10, yScale, left, false, 'intensity')));
-    return [].concat(_toConsumableArray(plotData.map(function (t) {
+
+    return [].concat(_toConsumableArray(refline), _toConsumableArray(plotData.map(function (t) {
         var item = {};
         item.key = t.id;
         item.id = t.id;
