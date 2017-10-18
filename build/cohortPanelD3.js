@@ -9520,7 +9520,7 @@ var renderModule = function renderModule(node) {
 		return item;
 	});
 
-	node.append('svg').attr('width', width).attr('height', height).call(_cohortPanel2.default.bindData(cleandata).setType(plotType).setWidth(width).setHeight(height));
+	node.append('div').call(_cohortPanel2.default.bindData(cleandata).setType(plotType).setWidth(width).setHeight(height));
 };
 
 renderModule.bindData = function (data) {
@@ -22771,52 +22771,75 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 var width = 1000,
     height = 500,
     plotType = 'volcano',
-    dataset = new Array();
+    dataset = new Array(),
+    plotsData = new Array();
 
-//   forwardClickHandler(d){
-//     // console.log(d);
-//     let metadata = this.props.dataset;
-// 		let plotData = {};
-//     if(d.type==='metabolite'){
-//          plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' +metadata[d.id].kegg_id+')' ;
-//          plotData.data = scatterPlot(metadata[d.id],this.props.width,this.props.height);
-//          this.setState({plots:[this.defaultPlot,plotData]});
-//     }else{
-//         axios.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids='+d.id.toString())
-//               .then(res => {
-//                 let lines = res.data.data.values.map((d)=>{
-//                    let line = {};
-//                    line.id = 'peak'+d.peak_id;
-//                    line.name = d.sample_name;
-//                    let x = d.eic_rt.split(',').map((d)=>Number(d))
-//                    let y = d.eic_intensity.split(',').map((d)=>Number(d))
-//                    line.values = x.map((t,i)=>{
-//                     return {x:t,y:y[i]}
-//                   }).filter((c)=>c.x>=Number(d.min_rt)&&c.x<=Number(d.max_rt))
-//                    return line;
-//                 });
-//                 plotData.title = 'Chromatogram' + ' Peak ID: '+res.data.data.values[0].peak_id;
-//                 plotData.data = linePlot(lines,this.props.width,this.props.height);
-//                 this.setState((prestate)=>({plots:[...prestate.plots.filter((d,i)=>i<2),plotData]}))
+var dispatcher = d3.dispatch('updateUI');
 
-//               })
-//     }
+var forwardClickHandler = function forwardClickHandler(d) {
+  var _this = this;
 
-// 	}
+  // console.log(d);
+  var metadata = dataset;
+  var plotData = {};
+  if (d.type === 'metabolite') {
+    plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' + metadata[d.id].kegg_id + ')';
+    plotData.data = (0, _plotFn.scatterPlot)(metadata[d.id], width, height);
+    plotsData = [].concat(_toConsumableArray(plotsData.filter(function (d, i) {
+      return i < 1;
+    })), [plotData]);
+  } else {
+    axios.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids=' + d.id.toString()).then(function (res) {
+      var lines = res.data.data.values.map(function (d) {
+        var line = {};
+        line.id = 'peak' + d.peak_id;
+        line.name = d.sample_name;
+        var x = d.eic_rt.split(',').map(function (d) {
+          return Number(d);
+        });
+        var y = d.eic_intensity.split(',').map(function (d) {
+          return Number(d);
+        });
+        line.values = x.map(function (t, i) {
+          return { x: t, y: y[i] };
+        }).filter(function (c) {
+          return c.x >= Number(d.min_rt) && c.x <= Number(d.max_rt);
+        });
+        return line;
+      });
+      plotData.title = 'Chromatogram' + ' Peak ID: ' + res.data.data.values[0].peak_id;
+      plotData.data = (0, _plotFn.linePlot)(lines, _this.props.width, _this.props.height);
+      plotsData = [].concat(_toConsumableArray(plotsData.filter(function (d, i) {
+        return i < 2;
+      })), [plotData]);
+    });
+  }
 
+  dispatcher.call('updateUI', this, plotsData);
+};
 
 // }
 
 var cohortPanel = function cohortPanel(_selection) {
 
-  var plotData = plotType === 'volcano' ? { title: 'volcano plot', data: (0, _plotFn.volcanoPlot)(dataset, width, height) } : { title: 'Kegg Map', data: (0, _plotFn.keggPlot)(dataset, width, height) };
+  plotsData = [plotType === 'volcano' ? { title: 'volcano plot', data: (0, _plotFn.volcanoPlot)(dataset, width, height) } : { title: 'Kegg Map', data: (0, _plotFn.keggPlot)(dataset, width, height) }];
 
-  _selection.selectAll('g').data([plotData]).enter().append('g').each(function (d) {
-    d3.select(this).call(_canvasPanel2.default.bindData(d));
+  dispatcher.on('updateUI', function (plots) {
+    _selection.selectAll('*').remove();
+    _selection.attr('height', height * plots.length);
+    _selection.selectAll('div').data(plots).enter().append('div')
+    // .attr('transform',(d,i)=>d3.zoomIdentity.translate(0,height*i))
+    .each(function (d) {
+      d3.select(this).call(_canvasPanel2.default.setClick(forwardClickHandler).setHeight(height).setWidth(width));
+    });
   });
+
+  dispatcher.call('updateUI', this, plotsData);
 };
 
 cohortPanel.bindData = function (data) {
@@ -22853,7 +22876,7 @@ exports.default = cohortPanel;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+          value: true
 });
 
 var _d = __webpack_require__(20);
@@ -22868,19 +22891,45 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-var dataset = { 'title': null, 'data': null };
+var width = 1000,
+    height = 500;
+
+var clickEvent = function clickEvent(d) {
+          return console.log(d);
+};
 
 var canvasPanel = function canvasPanel(_selection) {
 
-    _selection.selectAll('g').data(dataset.data).enter().append('g').each(function (d) {
-        d3.select(this).call(_vAtom2.default.bindData(d));
-    });
+          _selection.append('h2').text(function (d) {
+                    return d.title;
+          });
+          // .style('dominant-baseline','hanging')
+          // .style('text-anchor','start');
+
+
+          _selection.append('svg').attr('width', width).attr('height', height).selectAll('g').data(function (d) {
+                    return d.data;
+          }).enter().append('g').each(function (d) {
+                    d3.select(this).call(_vAtom2.default);
+          }).on('click', clickEvent);
 };
 
-canvasPanel.bindData = function (data) {
-    if (!arguments.length) return dataset;
-    dataset = data;
-    return this;
+canvasPanel.setClick = function (fn) {
+          if (!arguments.length) return clickEvent;
+          clickEvent = fn;
+          return this;
+};
+
+canvasPanel.setHeight = function (data) {
+          if (!arguments.length) return height;
+          height = data;
+          return this;
+};
+
+canvasPanel.setWidth = function (data) {
+          if (!arguments.length) return dataset;
+          width = data;
+          return this;
 };
 
 exports.default = canvasPanel;
@@ -22893,7 +22942,7 @@ exports.default = canvasPanel;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+       value: true
 });
 
 var _d = __webpack_require__(20);
@@ -22904,58 +22953,58 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var dataset = {
-    shape: { d: null },
-    location: { x: null, y: null }
-};
-
 var upperReg = /[A-Z]/;
 
 var attrVert = function attrVert(d) {
-    return Array.from(d).map(function (d) {
-        return d;
-    }).reduce(function (acc, d) {
-        return [].concat(_toConsumableArray(acc), [upperReg.test(d) ? '-' + d.toLowerCase() : d]);
-    }, []).join('');
+       return Array.from(d).map(function (d) {
+              return d;
+       }).reduce(function (acc, d) {
+              return [].concat(_toConsumableArray(acc), [upperReg.test(d) ? '-' + d.toLowerCase() : d]);
+       }, []).join('');
 };
 
 var render = function render(node, shape) {
-    return Object.keys(shape).forEach(function (d) {
-        return node.attr(attrVert(d), shape[d]);
-    });
+       return Object.keys(shape).forEach(function (d) {
+              return node.attr(attrVert(d), shape[d]);
+       });
 };
 
 var vAtom = function vAtom(_selection) {
+       var dataset = _selection.data()[0];
+       var textStyle = !dataset.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : dataset.tick;
+       // const content = ( this.state.x && this.props.label )?this.props.label.toString().split(';').map((c,i)=><tspan key={i} x={this.state.x} y={this.state.y+10*i}>{c}</tspan>):null;
+       var atomNode = _selection.append('g').attr('name', 'node');
+       atomNode.attr('transform', d3.zoomIdentity.translate(dataset.location.x, dataset.location.y));
+       render(atomNode.append('path'), dataset.shape);
+       if (dataset.tick) {
+              render(atomNode.append('text').text(dataset.label), textStyle);
+       }
+       var tooltip = _selection.append('text').attr('name', 'tooltip');
+       render(tooltip, textStyle);
+       _selection.node().addEventListener('mouseover', function (e) {
 
-    var textStyle = !dataset.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : dataset.tick;
-    // const content = ( this.state.x && this.props.label )?this.props.label.toString().split(';').map((c,i)=><tspan key={i} x={this.state.x} y={this.state.y+10*i}>{c}</tspan>):null;
-    var atomNode = _selection.append('g').attr('name', 'node');
-    atomNode.attr('transform', d3.zoomIdentity.translate(dataset.location.x, dataset.location.y));
-    render(atomNode.append('path'), dataset.shape);
-    if (dataset.tick) {
-        render(atomNode.append('text').text(dataset.label), textStyle);
-    }
-    var tooltip = _selection.append('g').attr('name', 'tooltip');
-    render(tooltip, textStyle);
-    _selection.node().addEventListener('mouseover', function (e) {
-        console.log(e);
-        if (dataset.label) {
-            tooltip.selectAll('tspan').data(dataset.label.toString().split(';')).enter().append('tspan').text(d).attr('x', e.offsetX).attr('y', function (d, i) {
-                return e.offsetY + 10 * i;
-            });
-        };
-    });
+              var label = _selection.data()[0].label;
 
-    _selection.node().addEventListener('mouseout', function (e) {
+              if (label) {
 
-        tooltip.selectAll('*').remove();
-    });
-};
+                     tooltip.selectAll('tspan').data(label.toString().split(';')).enter().append('tspan').text(function (t) {
+                            return t;
+                     }).attr('x', e.offsetX).attr('y', function (t, i) {
+                            return e.offsetY + 10 * i;
+                     });
+              };
+       });
 
-vAtom.bindData = function (data) {
-    if (!arguments.length) return dataset;
-    dataset = data;
-    return this;
+       _selection.node().addEventListener('mouseout', function (e) {
+
+              tooltip.selectAll('*').remove();
+       });
+
+       // _selection.node().addEventListener('click',(e)=>{
+
+       //         clickEvent(_selection.data()[0])
+
+       // })
 };
 
 exports.default = vAtom;
@@ -22968,7 +23017,7 @@ exports.default = vAtom;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 exports.linePlot = exports.scatterPlot = exports.volcanoPlot = exports.keggPlot = undefined;
 
@@ -22985,290 +23034,290 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 var margin = { left: 30, right: 20, top: 20, bottom: 20 };
 
 var drawCircle = function drawCircle(radius) {
-    return 'M ' + (0 - radius) + ' ' + 0 + ' a ' + radius + ' ' + radius + ', 0, 1, 0, ' + radius * 2 + ' ' + 0 + ' ' + 'a ' + radius + ' ' + radius + ', 0, 1, 0, ' + -radius * 2 + ' ' + 0;
+  return 'M ' + (0 - radius) + ' ' + 0 + ' a ' + radius + ' ' + radius + ', 0, 1, 0, ' + radius * 2 + ' ' + 0 + ' ' + 'a ' + radius + ' ' + radius + ', 0, 1, 0, ' + -radius * 2 + ' ' + 0;
 };
 var drawLine = function drawLine(range, direction) {
-    return 'M 0,0 ' + direction + ' ' + Math.abs(range[1] - range[0]);
+  return 'M 0,0 ' + direction + ' ' + Math.abs(range[1] - range[0]);
 };
 
 var axisFn = function axisFn(ticks, scalefn, position) {
-    var xaxis = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
-    var name = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+  var xaxis = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+  var name = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
 
 
-    var pointfn = d3.scalePoint().range(scalefn.range()).domain(d3.range(ticks));
+  var pointfn = d3.scalePoint().range(scalefn.range()).domain(d3.range(ticks));
 
-    var axis = {};
-    axis.key = xaxis ? 'xaxis' : 'yaixs';
-    axis.label = name;
+  var axis = {};
+  axis.key = xaxis ? 'xaxis' : 'yaixs';
+  axis.label = name;
+  if (xaxis) {
+    axis.tick = { x: scalefn.range()[1] - scalefn.range()[0], dominantBaseline: 'text-after-edge', textAnchor: 'end', fontSize: '1em', fill: '#000000' };
+  } else {
+    axis.tick = { transform: 'rotate(90)', dominantBaseline: 'text-after-edge', textAnchor: 'start', fontSize: '1em', fill: '#000000' };
+  }
+  axis.location = xaxis ? { x: d3.min(scalefn.range()), y: position } : { x: position, y: d3.min(scalefn.range()) };
+  axis.shape = { d: drawLine(scalefn.range(), xaxis ? 'h' : 'v'), stroke: '#000000', strokeWidth: '1px' };
+
+  //select the right format for label
+  var format = d3.median(scalefn.domain()) > 1000 ? d3.format('.2s') : d3.format('.2f');
+  return [].concat(_toConsumableArray(d3.range(ticks).map(function (t) {
+    var item = {};
+    item.key = (xaxis ? 'xtick' : 'ytick') + t;
+    item.location = xaxis ? { x: pointfn(t), y: position } : { y: pointfn(t), x: position };
+    item.label = format(scalefn.invert(pointfn(t)));
+
     if (xaxis) {
-        axis.tick = { x: scalefn.range()[1] - scalefn.range()[0], dominantBaseline: 'text-after-edge', textAnchor: 'end', fontSize: '1em', fill: '#000000' };
+      item.tick = { y: 5, dominantBaseline: 'hanging', textAnchor: 'middle', fontSize: '.7em', fill: '#000000' };
     } else {
-        axis.tick = { transform: 'rotate(90)', dominantBaseline: 'text-after-edge', textAnchor: 'start', fontSize: '1em', fill: '#000000' };
+      item.tick = { x: -5, dominantBaseline: 'central', textAnchor: 'end', fontSize: '.7em', fill: '#000000' };
     }
-    axis.location = xaxis ? { x: d3.min(scalefn.range()), y: position } : { x: position, y: d3.min(scalefn.range()) };
-    axis.shape = { d: drawLine(scalefn.range(), xaxis ? 'h' : 'v'), stroke: '#000000', strokeWidth: '1px' };
-
-    //select the right format for label
-    var format = d3.median(scalefn.domain()) > 1000 ? d3.format('.2s') : d3.format('.2f');
-    return [].concat(_toConsumableArray(d3.range(ticks).map(function (t) {
-        var item = {};
-        item.key = (xaxis ? 'xtick' : 'ytick') + t;
-        item.location = xaxis ? { x: pointfn(t), y: position } : { y: pointfn(t), x: position };
-        item.label = format(scalefn.invert(pointfn(t)));
-
-        if (xaxis) {
-            item.tick = { y: 5, dominantBaseline: 'hanging', textAnchor: 'middle', fontSize: '.7em', fill: '#000000' };
-        } else {
-            item.tick = { x: -5, dominantBaseline: 'central', textAnchor: 'end', fontSize: '.7em', fill: '#000000' };
-        }
-        item.shape = { d: xaxis ? 'M 0,0 L 0,5' : 'M 0,0 L -5,0', stroke: '#000000', strokeWidth: '1px' };
-        return item;
-    })), [axis]);
+    item.shape = { d: xaxis ? 'M 0,0 L 0,5' : 'M 0,0 L -5,0', stroke: '#000000', strokeWidth: '1px' };
+    return item;
+  })), [axis]);
 };
 
 var getNode = function getNode(peakids, vals, cohort) {
-    var peakid = peakids.split(',');
-    var val = vals.split(',');
+  var peakid = peakids.split(',');
+  var val = vals.split(',');
 
-    return peakid.map(function (d, i) {
-        var item = {};
-        item.x = cohort;
-        item.type = 'sample';
-        item.id = +d;
-        item.y = +val[i];
-        return item;
-    });
+  return peakid.map(function (d, i) {
+    var item = {};
+    item.x = cohort;
+    item.type = 'sample';
+    item.id = +d;
+    item.y = +val[i];
+    return item;
+  });
 };
 
 var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
-    //set canvas boundry
-    var left = 0;
-    var right = width;
-    var top = 0;
-    var bottom = height;
+  //set canvas boundry
+  var left = 0;
+  var right = width;
+  var top = 0;
+  var bottom = height;
 
-    var pMax = d3.max(metaData.map(function (d) {
-        return d.logPval;
-    }));
-    var pMin = d3.min(metaData.map(function (d) {
-        return d.logPval;
-    }));
-    var rMax = d3.max(metaData.map(function (d) {
-        return d.mean_ratio;
-    }));
-    var rMin = d3.min(metaData.map(function (d) {
-        return d.mean_ratio;
-    }));
-    var pFn = d3.scaleSqrt().range([2, 5]).domain([pMin, pMax]).nice();
-    var color = d3.scaleLinear().range(["blue", "red"]).domain([rMin, rMax]);
+  var pMax = d3.max(metaData.map(function (d) {
+    return d.logPval;
+  }));
+  var pMin = d3.min(metaData.map(function (d) {
+    return d.logPval;
+  }));
+  var rMax = d3.max(metaData.map(function (d) {
+    return d.mean_ratio;
+  }));
+  var rMin = d3.min(metaData.map(function (d) {
+    return d.mean_ratio;
+  }));
+  var pFn = d3.scaleSqrt().range([2, 5]).domain([pMin, pMax]).nice();
+  var color = d3.scaleLinear().range(["blue", "red"]).domain([rMin, rMax]);
 
-    var dataSet = _keggMap.keggMap.filter(function (d) {
-        return d.type === 'circle';
+  var dataSet = _keggMap.keggMap.filter(function (d) {
+    return d.type === 'circle';
+  });
+  var xMax = d3.max(dataSet.map(function (d) {
+    return +d.x;
+  }));
+  var xMin = d3.min(dataSet.map(function (d) {
+    return +d.x;
+  }));
+  var yMax = d3.max(dataSet.map(function (d) {
+    return +d.y;
+  }));
+  var yMin = d3.min(dataSet.map(function (d) {
+    return +d.y;
+  }));
+  var xFn = d3.scaleLinear().range([left, right]).domain([xMin, xMax]);
+  var yFn = d3.scaleLinear().range([top, bottom]).domain([yMin, yMax]);
+
+  return _keggMap.keggMap.map(function (g, i) {
+    var item = {};
+    var nodeDetail = metaData.filter(function (d) {
+      return d.kegg_id === g.name;
     });
-    var xMax = d3.max(dataSet.map(function (d) {
-        return +d.x;
-    }));
-    var xMin = d3.min(dataSet.map(function (d) {
-        return +d.x;
-    }));
-    var yMax = d3.max(dataSet.map(function (d) {
-        return +d.y;
-    }));
-    var yMin = d3.min(dataSet.map(function (d) {
-        return +d.y;
-    }));
-    var xFn = d3.scaleLinear().range([left, right]).domain([xMin, xMax]);
-    var yFn = d3.scaleLinear().range([top, bottom]).domain([yMin, yMax]);
+    item.key = 'k' + i;
+    item.type = nodeDetail.length > 0 ? nodeDetail[0].type : 'null';
+    item.id = nodeDetail.length > 0 ? nodeDetail[0].id : g.name;
+    item.label = g.type !== 'line' && nodeDetail.length > 0 ? ['name :' + nodeDetail[0].metabolite, 'Kegg_id:' + nodeDetail[0].kegg_id, 'mean_ration :' + nodeDetail[0].mean_ratio, 'logPValue :' + nodeDetail[0].logPval].join(';') : null;
+    item.location = { x: 0, y: 0 };
 
-    return _keggMap.keggMap.map(function (g, i) {
-        var item = {};
-        var nodeDetail = metaData.filter(function (d) {
-            return d.kegg_id === g.name;
-        });
-        item.key = 'k' + i;
-        item.type = nodeDetail.length > 0 ? nodeDetail[0].type : 'null';
-        item.id = nodeDetail.length > 0 ? nodeDetail[0].id : g.name;
-        item.label = g.type !== 'line' && nodeDetail.length > 0 ? ['name :' + nodeDetail[0].metabolite, 'Kegg_id:' + nodeDetail[0].kegg_id, 'mean_ration :' + nodeDetail[0].mean_ratio, 'logPValue :' + nodeDetail[0].logPval].join(';') : null;
-        item.location = { x: 0, y: 0 };
+    if (g.type === 'line') {
+      var coords = g.coords.split(",");
+      var Xcoords = coords.filter(function (c, i) {
+        return i % 2 == 0;
+      }).map(function (d) {
+        return xFn(+d);
+      });
+      var Ycoords = coords.filter(function (c, i) {
+        return i % 2 != 0;
+      }).map(function (d) {
+        return yFn(+d);
+      });
+      item.shape = { d: "M" + Xcoords.map(function (d, i) {
+          return d + "," + Ycoords[i];
+        }).join(" L"), stroke: g.fgcolor, strokeWidth: '1px', fill: 'none' };
+    } else {
 
-        if (g.type === 'line') {
-            var coords = g.coords.split(",");
-            var Xcoords = coords.filter(function (c, i) {
-                return i % 2 == 0;
-            }).map(function (d) {
-                return xFn(+d);
-            });
-            var Ycoords = coords.filter(function (c, i) {
-                return i % 2 != 0;
-            }).map(function (d) {
-                return yFn(+d);
-            });
-            item.shape = { d: "M" + Xcoords.map(function (d, i) {
-                    return d + "," + Ycoords[i];
-                }).join(" L"), stroke: g.fgcolor, strokeWidth: '1px', fill: 'none' };
-        } else {
+      item.location = { x: xFn(+g.x), y: yFn(+g.y) };
+      item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, stroke: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, strokeWidth: '1px' };
+    }
 
-            item.location = { x: xFn(+g.x), y: yFn(+g.y) };
-            item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, stroke: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, strokeWidth: '1px' };
-        }
-
-        return item;
-    });
+    return item;
+  });
 };
 
 var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, height) {
-    //set canvas boundry
-    var left = margin.left;
-    var right = width - margin.right;
-    var top = margin.top;
-    var bottom = height - margin.bottom;
-    var circle_ratio = width * 0.007;
+  //set canvas boundry
+  var left = margin.left;
+  var right = width - margin.right;
+  var top = margin.top;
+  var bottom = height - margin.bottom;
+  var circle_ratio = width * 0.007;
 
-    //set x-scale y-scale and color;
-    var xMax = d3.max(plotData.map(function (d) {
-        return d.mean_ratio;
-    }));
-    var xMin = d3.min(plotData.map(function (d) {
-        return d.mean_ratio;
-    }));
-    var yMax = d3.max(plotData.map(function (d) {
-        return d.logPval;
-    }));
-    var yMin = d3.min(plotData.map(function (d) {
-        return d.logPval;
-    }));
-    var xFn = d3.scaleLinear().range([left, right]).domain([xMin, xMax]).nice();
-    var yFn = d3.scaleLinear().range([bottom, top]).domain([0, yMax]).nice();
-    var color = d3.scaleSequential().domain([yMin * xMin, yMax * xMax]).interpolator(d3.interpolateRainbow);
+  //set x-scale y-scale and color;
+  var xMax = d3.max(plotData.map(function (d) {
+    return d.mean_ratio;
+  }));
+  var xMin = d3.min(plotData.map(function (d) {
+    return d.mean_ratio;
+  }));
+  var yMax = d3.max(plotData.map(function (d) {
+    return d.logPval;
+  }));
+  var yMin = d3.min(plotData.map(function (d) {
+    return d.logPval;
+  }));
+  var xFn = d3.scaleLinear().range([left, right]).domain([xMin, xMax]).nice();
+  var yFn = d3.scaleLinear().range([bottom, top]).domain([0, yMax]).nice();
+  var color = d3.scaleSequential().domain([yMin * xMin, yMax * xMax]).interpolator(d3.interpolateRainbow);
 
-    //vocalno plot need 0 references line 
-    var refline = { key: 'vline', location: { x: xFn(0), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
-    var axis = [].concat(_toConsumableArray(axisFn(10, xFn, bottom, true, 'mean_ratio')), _toConsumableArray(axisFn(10, yFn, left, false, 'logPval')));
-    return [refline].concat(_toConsumableArray(plotData.map(function (t) {
-        var item = {};
-        item.key = 'v' + t.id;
-        item.id = t.id;
-        item.type = t.type;
-        item.label = ['name :' + t.metabolite, 'Kegg_id:' + t.kegg_id, 'mean_ration :' + t.mean_ratio, 'logPValue :' + t.logPval].join(';');
-        item.location = { x: xFn(t.mean_ratio), y: yFn(t.logPval) };
-        item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio * t.logPval), stroke: '#ffffff', strokeWidth: '1px' };
-        return item;
-    })), _toConsumableArray(axis));
+  //vocalno plot need 0 references line 
+  var refline = { key: 'vline', location: { x: xFn(0), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
+  var axis = [].concat(_toConsumableArray(axisFn(10, xFn, bottom, true, 'mean_ratio')), _toConsumableArray(axisFn(10, yFn, left, false, 'logPval')));
+  return [refline].concat(_toConsumableArray(plotData.map(function (t) {
+    var item = {};
+    item.key = 'v' + t.id;
+    item.id = t.id;
+    item.type = t.type;
+    item.label = ['name :' + t.metabolite, 'Kegg_id:' + t.kegg_id, 'mean_ration :' + t.mean_ratio, 'logPValue :' + t.logPval].join(';');
+    item.location = { x: xFn(t.mean_ratio), y: yFn(t.logPval) };
+    item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio * t.logPval), stroke: '#ffffff', strokeWidth: '1px' };
+    return item;
+  })), _toConsumableArray(axis));
 };
 
 var scatterPlot = exports.scatterPlot = function scatterPlot(plotData, width, height) {
-    var left = margin.left;
-    var right = width - margin.right;
-    var top = margin.top;
-    var bottom = height - margin.bottom;
-    var circle_ratio = width * 0.010;
+  var left = margin.left;
+  var right = width - margin.right;
+  var top = margin.top;
+  var bottom = height - margin.bottom;
+  var circle_ratio = width * 0.010;
 
-    var data = [].concat(_toConsumableArray(getNode(plotData.peakids_1, plotData.vals_1, plotData.cohort1)), _toConsumableArray(getNode(plotData.peakids_2, plotData.vals_2, plotData.cohort2)));
-    var dataSet = data.sort(function (a, b) {
-        return a.x > b.x;
+  var data = [].concat(_toConsumableArray(getNode(plotData.peakids_1, plotData.vals_1, plotData.cohort1)), _toConsumableArray(getNode(plotData.peakids_2, plotData.vals_2, plotData.cohort2)));
+  var dataSet = data.sort(function (a, b) {
+    return a.x > b.x;
+  });
+  var xValues = dataSet.map(function (d) {
+    return d.id;
+  });
+  var xFn = d3.scalePoint().range([left, right]).domain(xValues).padding(0.5);
+
+  var yMax = d3.max(dataSet.map(function (d) {
+    return d.y;
+  }));
+  var yMin = d3.min(dataSet.map(function (d) {
+    return d.y;
+  }));
+  // let ymedian = d3.median(dataSet.map((d)=>d.y))
+  var yFn = d3.scaleLinear().range([bottom, top]).domain([0, yMax]).nice();
+
+  var color = d3.scaleOrdinal().range(d3.schemeCategory20).domain(xValues);
+  //draw xaxis
+
+  var xaxis = d3.nest().key(function (d) {
+    return d.x;
+  }).rollup(function (d) {
+    return d.map(function (t) {
+      return xFn(t.id);
     });
-    var xValues = dataSet.map(function (d) {
-        return d.id;
-    });
-    var xFn = d3.scalePoint().range([left, right]).domain(xValues).padding(0.5);
+  }).sortKeys(function (a, b) {
+    return a.x > b.x;
+  }).entries(data).map(function (g, i) {
+    var w = d3.max(g.value) - d3.min(g.value);
+    var item = {};
+    item.key = 'xaxis' + i;
+    item.label = g.key;
+    item.location = { x: d3.min(g.value), y: bottom };
+    item.shape = { stroke: '#000000', strokeWidth: '1px', fill: 'none' };
+    item.shape.d = 'M 0,5 v -5 h' + w + ' v 5';
+    item.tick = { dominantBaseline: 'hanging', textAnchor: 'middle', fontSize: '1em', fill: '#000000' };
+    item.tick.x = w / 2;
+    item.tick.y = 2.5;
+    return item;
+  });
 
-    var yMax = d3.max(dataSet.map(function (d) {
-        return d.y;
-    }));
-    var yMin = d3.min(dataSet.map(function (d) {
-        return d.y;
-    }));
-    // let ymedian = d3.median(dataSet.map((d)=>d.y))
-    var yFn = d3.scaleLinear().range([bottom, top]).domain([0, yMax]).nice();
-
-    var color = d3.scaleOrdinal().range(d3.schemeCategory20).domain(xValues);
-    //draw xaxis
-
-    var xaxis = d3.nest().key(function (d) {
-        return d.x;
-    }).rollup(function (d) {
-        return d.map(function (t) {
-            return xFn(t.id);
-        });
-    }).sortKeys(function (a, b) {
-        return a.x > b.x;
-    }).entries(data).map(function (g, i) {
-        var w = d3.max(g.value) - d3.min(g.value);
-        var item = {};
-        item.key = 'xaxis' + i;
-        item.label = g.key;
-        item.location = { x: d3.min(g.value), y: bottom };
-        item.shape = { stroke: '#000000', strokeWidth: '1px', fill: 'none' };
-        item.shape.d = 'M 0,5 v -5 h' + w + ' v 5';
-        item.tick = { dominantBaseline: 'hanging', textAnchor: 'middle', fontSize: '1em', fill: '#000000' };
-        item.tick.x = w / 2;
-        item.tick.y = 2.5;
-        return item;
-    });
-
-    var axis = [].concat(_toConsumableArray(xaxis), _toConsumableArray(axisFn(10, yFn, left, false, 'areatop')));
-    return [].concat(_toConsumableArray(dataSet.map(function (t) {
-        var item = {};
-        item.key = t.id;
-        item.id = t.id;
-        item.type = t.type;
-        item.label = t.id;
-        item.location = { x: xFn(t.id), y: yFn(t.y) };
-        item.shape = { d: drawCircle(circle_ratio), fill: color(t.id), strokeWidth: '1px' };
-        return item;
-    })), _toConsumableArray(axis));
+  var axis = [].concat(_toConsumableArray(xaxis), _toConsumableArray(axisFn(10, yFn, left, false, 'areatop')));
+  return [].concat(_toConsumableArray(dataSet.map(function (t) {
+    var item = {};
+    item.key = t.id;
+    item.id = t.id;
+    item.type = t.type;
+    item.label = t.id;
+    item.location = { x: xFn(t.id), y: yFn(t.y) };
+    item.shape = { d: drawCircle(circle_ratio), fill: color(t.id), strokeWidth: '1px' };
+    return item;
+  })), _toConsumableArray(axis));
 };
 
 var linePlot = exports.linePlot = function linePlot(plotData, width, height) {
-    var left = margin.left;
-    var right = width - margin.right;
-    var top = margin.top;
-    var bottom = height - margin.bottom;
+  var left = margin.left;
+  var right = width - margin.right;
+  var top = margin.top;
+  var bottom = height - margin.bottom;
 
-    var Xmin = d3.min(plotData.map(function (d) {
-        return d3.min(d.values.map(function (t) {
-            return t.x;
-        }));
+  var Xmin = d3.min(plotData.map(function (d) {
+    return d3.min(d.values.map(function (t) {
+      return t.x;
     }));
-    var Xmax = d3.max(plotData.map(function (d) {
-        return d3.max(d.values.map(function (t) {
-            return t.x;
-        }));
+  }));
+  var Xmax = d3.max(plotData.map(function (d) {
+    return d3.max(d.values.map(function (t) {
+      return t.x;
     }));
-    var Ymin = d3.min(plotData.map(function (d) {
-        return d3.min(d.values.map(function (t) {
-            return t.y;
-        }));
+  }));
+  var Ymin = d3.min(plotData.map(function (d) {
+    return d3.min(d.values.map(function (t) {
+      return t.y;
     }));
-    var Ymax = d3.max(plotData.map(function (d) {
-        return d3.max(d.values.map(function (t) {
-            return t.y;
-        }));
+  }));
+  var Ymax = d3.max(plotData.map(function (d) {
+    return d3.max(d.values.map(function (t) {
+      return t.y;
     }));
-    var xScale = d3.scaleLinear().range([left, right]).domain([Xmin, Xmax]).nice();
-    var yScale = d3.scaleLinear().range([bottom, top]).domain([Ymin, Ymax]).nice();
+  }));
+  var xScale = d3.scaleLinear().range([left, right]).domain([Xmin, Xmax]).nice();
+  var yScale = d3.scaleLinear().range([bottom, top]).domain([Ymin, Ymax]).nice();
 
-    var color = d3.scaleOrdinal().range(d3.schemeCategory20);
-    var lineFunction = d3.line().x(function (d) {
-        return xScale(d.x);
-    }).y(function (d) {
-        return yScale(d.y);
-    }).curve(d3.curveMonotoneX);
-    var refline = plotData.map(function (d) {
-        return { key: 'vline', location: { x: xScale(d.ref), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
-    });
-    var axis = [].concat(_toConsumableArray(axisFn(10, xScale, bottom, true, 'rt')), _toConsumableArray(axisFn(10, yScale, left, false, 'intensity')));
+  var color = d3.scaleOrdinal().range(d3.schemeCategory20);
+  var lineFunction = d3.line().x(function (d) {
+    return xScale(d.x);
+  }).y(function (d) {
+    return yScale(d.y);
+  }).curve(d3.curveMonotoneX);
+  var refline = plotData.map(function (d) {
+    return { key: 'vline', location: { x: xScale(d.ref), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
+  });
+  var axis = [].concat(_toConsumableArray(axisFn(10, xScale, bottom, true, 'rt')), _toConsumableArray(axisFn(10, yScale, left, false, 'intensity')));
 
-    return [].concat(_toConsumableArray(refline), _toConsumableArray(plotData.map(function (t) {
-        var item = {};
-        item.key = t.id;
-        item.id = t.id;
-        item.label = t.name;
-        item.location = { x: 0, y: 0 };
-        item.shape = { d: lineFunction(t.values), stroke: color(t.id), strokeWidth: '2px', fill: 'none' };
-        return item;
-    })), _toConsumableArray(axis));
+  return [].concat(_toConsumableArray(refline), _toConsumableArray(plotData.map(function (t) {
+    var item = {};
+    item.key = t.id;
+    item.id = t.id;
+    item.label = t.name;
+    item.location = { x: 0, y: 0 };
+    item.shape = { d: lineFunction(t.values), stroke: color(t.id), strokeWidth: '2px', fill: 'none' };
+    return item;
+  })), _toConsumableArray(axis));
 };
 
 /***/ }),

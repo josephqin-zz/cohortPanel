@@ -17,9 +17,7 @@ var renderModule = function(node){
 		return item;
 	});
     	
-  	node.append('svg')
-  		.attr('width',width)
-  		.attr('height',height)
+  	node.append('div')
   		.call(cohortPanel.bindData(cleandata).setType(plotType).setWidth(width).setHeight(height))
 	
 };
