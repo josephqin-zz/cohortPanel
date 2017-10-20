@@ -1,7 +1,7 @@
 import * as d3 from 'd3'
 import canvasPanel from './canvasPanel';
 import {volcanoPlot,scatterPlot,keggPlot,linePlot} from '../components/plotFn'
-
+import axios from 'axios';
 
 var width = 1000,
     height = 500,
@@ -19,6 +19,7 @@ var forwardClickHandler = function(d){
          plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' +metadata[d.id].kegg_id+')' ;
          plotData.data = scatterPlot(metadata[d.id],width,height);
          plotsData = [...plotsData.filter((d,i)=>i<1),plotData]
+         dispatcher.call('updateUI',this,plotsData);
     }else{
         axios.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids='+d.id.toString())
               .then(res => {
@@ -31,18 +32,16 @@ var forwardClickHandler = function(d){
                    line.values = x.map((t,i)=>{
                     return {x:t,y:y[i]}
                   }).filter((c)=>c.x>=Number(d.min_rt)&&c.x<=Number(d.max_rt))
+                   line.ref = d.rt;
                    return line;
                 });
                 plotData.title = 'Chromatogram' + ' Peak ID: '+res.data.data.values[0].peak_id;
-                plotData.data = linePlot(lines,this.props.width,this.props.height);
+                plotData.data = linePlot(lines,width,height);
                 plotsData=[...plotsData.filter((d,i)=>i<2),plotData]
+                dispatcher.call('updateUI',this,plotsData);
 
               })
-    }
-  
-    dispatcher.call('updateUI',this,plotsData);
-
-		
+    }	
 	}
 
 	

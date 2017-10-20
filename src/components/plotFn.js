@@ -129,9 +129,19 @@ export var volcanoPlot = function(plotData,width,height){
        let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
        
        //vocalno plot need 0 references line 
-       let refline = {key:'vline',location:{x:xFn(0),y:bottom},shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }}
+       let refline = [{key:'vline',
+                       location:{x:xFn(0),y:bottom},
+                       shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
+                      },
+                      {key:'pVline',
+                       label:'pValue=0.5',
+                       tick : {x:(right-left),dominantBaseline:'text-after-edge',textAnchor:'end', fontSize:'1em',fill:'#000000'},
+                       location:{x:left,y:yFn(1.3)},
+                       shape:{d:'M 0,0 L '+(right-left)+',0',stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
+                      }
+                      ]
        let axis = [...axisFn(10,xFn,bottom,true,'mean_ratio'),...axisFn(10,yFn,left,false,'logPval')];
-       return [refline,...plotData.map((t)=>{
+       return [...refline,...plotData.map((t)=>{
         let item = {};
         item.key = 'v'+t.id;
         item.id = t.id;

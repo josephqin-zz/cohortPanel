@@ -10902,20 +10902,22 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 var width = 1000,
     height = 500,
+    plotType = 'volcano',
     dataset = new Array();
 
 var renderModule = function renderModule(node) {
 
 	var cleandata = dataset.filter(function (d) {
-		return d.logPval !== null;
+		return d.logPval !== null && !isNaN(d.logPval);
 	}).map(function (d, i) {
 		var item = {};
 		Object.assign(item, d);
 		item.id = i;
+		item.type = 'metabolite';
 		return item;
 	});
 
-	_reactDom2.default.render(_react2.default.createElement(_Cohortpanel2.default, { width: width, height: height, dataset: cleandata }), node.node());
+	_reactDom2.default.render(_react2.default.createElement(_Cohortpanel2.default, { width: width, height: height, dataset: cleandata, defaultType: plotType }), node.node());
 };
 
 renderModule.bindData = function (data) {
@@ -10934,6 +10936,16 @@ renderModule.setWidth = function (data) {
 	if (!arguments.length) return dataset;
 	width = data;
 	return this;
+};
+
+renderModule.setType = function (data) {
+	if (!arguments.length) return plotType;
+	plotType = data;
+	return this;
+};
+
+renderModule.remove = function (node) {
+	_reactDom2.default.unmountComponentAtNode(node.node());
 };
 
 module.exports = renderModule;
@@ -31333,7 +31345,7 @@ var Cohortpanel = function (_React$Component) {
     key: 'forwardClickHandler',
     value: function forwardClickHandler(d) {
       if (this.state.phase.length < 3) {
-        this.getnewPlot([].concat(_toConsumableArray(this.state.phase), [d]));
+        this.getnewPlot([].concat(_toConsumableArray(this.state.phase), [d.id]));
       }
     }
   }, {
@@ -31360,7 +31372,7 @@ var Cohortpanel = function (_React$Component) {
           '   '
         ),
         _react2.default.createElement(
-          'h2',
+          'h3',
           { id: 'title' },
           this.state.phase.length > 1 && _react2.default.createElement(
             'button',
@@ -31418,27 +31430,26 @@ var Canvas = function (_React$Component) {
     function Canvas(props) {
         _classCallCheck(this, Canvas);
 
-        var _this = _possibleConstructorReturn(this, (Canvas.__proto__ || Object.getPrototypeOf(Canvas)).call(this, props));
-
-        _this.state = { showLabel: -1 };
-        return _this;
+        return _possibleConstructorReturn(this, (Canvas.__proto__ || Object.getPrototypeOf(Canvas)).call(this, props));
+        // this.state = {showLabel:-1}
     }
 
-    _createClass(Canvas, [{
-        key: 'handlerHighlight',
-        value: function handlerHighlight(d) {
+    // handlerHighlight(d){
 
-            this.setState({ showLabel: d });
-        }
-    }, {
+    // 	this.setState({showLabel:d})
+
+
+    // }
+
+    _createClass(Canvas, [{
         key: 'render',
         value: function render() {
             var _this2 = this;
 
             var atomList = this.props.dataset.map(function (p) {
-                return _react2.default.createElement(_Vatom2.default, _extends({ key: p.key, onHighlight: _this2.handlerHighlight.bind(_this2, p.key), onClick: function onClick() {
-                        return _this2.props.onClick(p.id);
-                    } }, p, { showLabel: _this2.state.showLabel === p.key }));
+                return _react2.default.createElement(_Vatom2.default, _extends({ key: p.key, onClick: function onClick() {
+                        return _this2.props.onClick(p);
+                    } }, p));
             });
             return _react2.default.createElement(
                 'svg',
@@ -31485,23 +31496,38 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var Vatom = function (_React$Component) {
     _inherits(Vatom, _React$Component);
 
-    function Vatom() {
+    function Vatom(props) {
         _classCallCheck(this, Vatom);
 
-        return _possibleConstructorReturn(this, (Vatom.__proto__ || Object.getPrototypeOf(Vatom)).apply(this, arguments));
+        var _this = _possibleConstructorReturn(this, (Vatom.__proto__ || Object.getPrototypeOf(Vatom)).call(this, props));
+
+        _this.state = { x: null, y: null };
+        return _this;
     }
 
     _createClass(Vatom, [{
         key: 'componentDidMount',
         value: function componentDidMount() {
-            this.vatom.addEventListener('mouseover', this.props.onHighlight);
+            this.vatom.addEventListener('mouseover', this.onHighlight.bind(this));
+            this.vatom.addEventListener('mouseout', this.offHighlight.bind(this));
             this.vatom.addEventListener('click', this.props.onClick);
         }
     }, {
         key: 'componentWillUnmount',
         value: function componentWillUnmount() {
-            this.vatom.removeEventListener('mouseover', this.props.onHighlight);
+            this.vatom.removeEventListener('mouseover', this.onHighlight.bind(this));
+            this.vatom.removeEventListener('mouseout', this.offHighlight.bind(this));
             this.vatom.removeEventListener('click', this.props.onClick);
+        }
+    }, {
+        key: 'onHighlight',
+        value: function onHighlight(e) {
+            this.setState({ x: e.offsetX, y: e.offsetY });
+        }
+    }, {
+        key: 'offHighlight',
+        value: function offHighlight(e) {
+            this.setState({ x: null, y: null });
         }
     }, {
         key: 'render',
@@ -31510,19 +31536,36 @@ var Vatom = function (_React$Component) {
 
             var textStyle = !this.props.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : this.props.tick;
 
-            var content = this.props.label;
+            var content = this.state.x && this.props.label ? this.props.label.toString().split(';').map(function (c, i) {
+                return _react2.default.createElement(
+                    'tspan',
+                    { key: i, x: _this2.state.x, y: _this2.state.y + 10 * i },
+                    c
+                );
+            }) : null;
             return _react2.default.createElement(
                 'g',
                 { ref: function ref(_ref) {
                         return _this2.vatom = _ref;
-                    }, transform: "translate (" + this.props.location.x + ',' + this.props.location.y + ")" },
-                _react2.default.createElement('path', this.props.shape),
-                (this.props.tick || this.props.showLabel) && _react2.default.createElement(
+                    } },
+                _react2.default.createElement(
+                    'g',
+                    { transform: "translate (" + this.props.location.x + ',' + this.props.location.y + ")" },
+                    _react2.default.createElement('path', this.props.shape),
+                    this.props.tick && _react2.default.createElement(
+                        'text',
+                        textStyle,
+                        ' ',
+                        this.props.label,
+                        ' '
+                    )
+                ),
+                !this.props.tick && _react2.default.createElement(
                     'text',
                     textStyle,
                     ' ',
                     content,
-                    ' '
+                    '  '
                 )
             );
         }
@@ -31607,6 +31650,7 @@ var getNode = function getNode(peakids, vals, cohort) {
     return peakid.map(function (d, i) {
         var item = {};
         item.x = cohort;
+        item.type = 'sample';
         item.id = +d;
         item.y = +val[i];
         return item;
@@ -31626,7 +31670,14 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
     var pMin = d3.min(metaData.map(function (d) {
         return d.logPval;
     }));
+    var rMax = d3.max(metaData.map(function (d) {
+        return d.mean_ratio;
+    }));
+    var rMin = d3.min(metaData.map(function (d) {
+        return d.mean_ratio;
+    }));
     var pFn = d3.scaleSqrt().range([2, 5]).domain([pMin, pMax]).nice();
+    var color = d3.scaleLinear().range(["blue", "red"]).domain([rMin, rMax]);
 
     var dataSet = _keggMap.keggMap.filter(function (d) {
         return d.type === 'circle';
@@ -31652,8 +31703,9 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
             return d.kegg_id === g.name;
         });
         item.key = 'k' + i;
+        item.type = nodeDetail.length > 0 ? nodeDetail[0].type : 'null';
         item.id = nodeDetail.length > 0 ? nodeDetail[0].id : g.name;
-        item.label = g.type === 'line' ? null : g.name;
+        item.label = g.type !== 'line' && nodeDetail.length > 0 ? ['name :' + nodeDetail[0].metabolite, 'Kegg_id:' + nodeDetail[0].kegg_id, 'mean_ration :' + nodeDetail[0].mean_ratio, 'logPValue :' + nodeDetail[0].logPval].join(';') : null;
         item.location = { x: 0, y: 0 };
 
         if (g.type === 'line') {
@@ -31672,8 +31724,9 @@ var keggPlot = exports.keggPlot = function keggPlot(metaData, width, height) {
                     return d + "," + Ycoords[i];
                 }).join(" L"), stroke: g.fgcolor, strokeWidth: '1px', fill: 'none' };
         } else {
+
             item.location = { x: xFn(+g.x), y: yFn(+g.y) };
-            item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: g.bgcolor, stroke: g.fgcolor, strokeWidth: '1px' };
+            item.shape = { d: drawCircle(nodeDetail.length > 0 ? pFn(nodeDetail[0].logPval) : 1), fill: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, stroke: nodeDetail.length > 0 ? color(nodeDetail[0].mean_ratio) : g.fgcolor, strokeWidth: '1px' };
         }
 
         return item;
@@ -31706,13 +31759,22 @@ var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, he
     var color = d3.scaleSequential().domain([yMin * xMin, yMax * xMax]).interpolator(d3.interpolateRainbow);
 
     //vocalno plot need 0 references line 
-    var refline = { key: 'vline', location: { x: xFn(0), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
+    var refline = [{ key: 'vline',
+        location: { x: xFn(0), y: bottom },
+        shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" }
+    }, { key: 'pVline',
+        label: 'pValue=0.5',
+        tick: { x: right - left, dominantBaseline: 'text-after-edge', textAnchor: 'end', fontSize: '1em', fill: '#000000' },
+        location: { x: left, y: yFn(1.3) },
+        shape: { d: 'M 0,0 L ' + (right - left) + ',0', stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" }
+    }];
     var axis = [].concat(_toConsumableArray(axisFn(10, xFn, bottom, true, 'mean_ratio')), _toConsumableArray(axisFn(10, yFn, left, false, 'logPval')));
-    return [refline].concat(_toConsumableArray(plotData.map(function (t) {
+    return [].concat(refline, _toConsumableArray(plotData.map(function (t) {
         var item = {};
         item.key = 'v' + t.id;
         item.id = t.id;
-        item.label = t.metabolite;
+        item.type = t.type;
+        item.label = ['name :' + t.metabolite, 'Kegg_id:' + t.kegg_id, 'mean_ration :' + t.mean_ratio, 'logPValue :' + t.logPval].join(';');
         item.location = { x: xFn(t.mean_ratio), y: yFn(t.logPval) };
         item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio * t.logPval), stroke: '#ffffff', strokeWidth: '1px' };
         return item;
@@ -31774,6 +31836,7 @@ var scatterPlot = exports.scatterPlot = function scatterPlot(plotData, width, he
         var item = {};
         item.key = t.id;
         item.id = t.id;
+        item.type = t.type;
         item.label = t.id;
         item.location = { x: xFn(t.id), y: yFn(t.y) };
         item.shape = { d: drawCircle(circle_ratio), fill: color(t.id), strokeWidth: '1px' };
@@ -31816,9 +31879,12 @@ var linePlot = exports.linePlot = function linePlot(plotData, width, height) {
     }).y(function (d) {
         return yScale(d.y);
     }).curve(d3.curveMonotoneX);
-
+    var refline = plotData.map(function (d) {
+        return { key: 'vline', location: { x: xScale(d.ref), y: bottom }, shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '1px', strokeDasharray: "5, 5" } };
+    });
     var axis = [].concat(_toConsumableArray(axisFn(10, xScale, bottom, true, 'rt')), _toConsumableArray(axisFn(10, yScale, left, false, 'intensity')));
-    return [].concat(_toConsumableArray(plotData.map(function (t) {
+
+    return [].concat(_toConsumableArray(refline), _toConsumableArray(plotData.map(function (t) {
         var item = {};
         item.key = t.id;
         item.id = t.id;

@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDom from 'react-dom';
-import Cohortpanel from './components/CohortpanelV2'
+import Cohortpanel from './components/Cohortpanel'
 
 
 var width = 1000,

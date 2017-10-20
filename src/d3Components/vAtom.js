@@ -1,7 +1,5 @@
 import * as d3 from 'd3';
 
-
-
 var upperReg = /[A-Z]/    
 
 var attrVert = (d) => Array.from(d).map((d)=>d).reduce((acc,d)=>[...acc,upperReg.test(d)?'-'+d.toLowerCase():d],[]).join('')
@@ -24,14 +22,14 @@ var vAtom = function(_selection){
 
     	 let label = _selection.data()[0].label;
          
-    	 if(label){
+    	 if(!dataset.tick && label){
            
     	 	tooltip.selectAll('tspan')
     	 		   .data(label.toString().split(';'))
     	 		   .enter()
     	 		   .append('tspan')
     	 		   .text((t)=>t)
-    	 		   .attr('x',e.offsetX)
+    	 		   .attr('x',e.offsetX+5)
     	 		   .attr('y',(t,i)=>e.offsetY+10*i)
     	 };
     })

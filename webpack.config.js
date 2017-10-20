@@ -5,13 +5,13 @@ var SRC = path.resolve(__dirname, "src");
 var OUTPUT = path.resolve(__dirname, "build");
 
 module.exports = {
-	entry: SRC+"/indexD3.js",
+	entry: SRC+"/index.jsx",
 	output:{
 		// library:'cohortPanel',
 		path:OUTPUT,
 		library:'cohortPanel',
 		libraryTarget:'umd',
-		filename:'cohortPanelD3.js'
+		filename:'cohortPanel.js'
 
 	},
 	module:{
