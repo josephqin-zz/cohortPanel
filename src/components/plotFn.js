@@ -111,7 +111,7 @@ export var keggPlot = function(metaData,width,height){
 
 
   	
-export var volcanoPlot = function(plotData,width,height){
+export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
        //set canvas boundry
        let left = margin.left;
        let right = width-margin.right;
@@ -126,17 +126,22 @@ export var volcanoPlot = function(plotData,width,height){
        let yMin = d3.min(plotData.map((d)=>d.logPval));
        let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]).nice();
        let yFn = d3.scaleLinear().range([bottom,top]).domain([0,yMax]).nice();
-       let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
+       let color = (x,y)=>{
+           if ( y>=pvref && x<=vref[0] ) return 'blue';
+           if ( y>=pvref && x>=vref[1] ) return 'red';
+           return 'grey';
+       }
+       // let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
        
        //vocalno plot need 0 references line 
-       let refline = [{key:'vline',
-                       location:{x:xFn(0),y:bottom},
+       let refline = [...vref.map((v,index)=>({key:'vline'+index,
+                       location:{x:xFn(v),y:bottom},
                        shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
-                      },
+                      })),
                       {key:'pVline',
-                       label:'pValue=0.5',
+                       label: pvref,
                        tick : {x:(right-left),dominantBaseline:'text-after-edge',textAnchor:'end', fontSize:'1em',fill:'#000000'},
-                       location:{x:left,y:yFn(1.3)},
+                       location:{x:left,y:yFn(pvref)},
                        shape:{d:'M 0,0 L '+(right-left)+',0',stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
                       }
                       ]
@@ -148,7 +153,7 @@ export var volcanoPlot = function(plotData,width,height){
         item.type = t.type;
         item.label = ['name :'+t.metabolite,'Kegg_id:'+t.kegg_id,'mean_ration :'+t.mean_ratio,'logPValue :'+t.logPval].join(';');
         item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
-        item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio*t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
+        item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio,t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
         return item
        }),...axis]
 

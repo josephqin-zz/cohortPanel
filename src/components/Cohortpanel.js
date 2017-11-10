@@ -13,8 +13,8 @@ export default class Cohortpanel extends React.Component {
 
 
     getnewPlot(newPhase){
-    	let metadata = this.props.dataset;
-		let phaseLength = newPhase.length;
+    	  let metadata = this.props.dataset;
+		    let phaseLength = newPhase.length;
         let phaseIndex = newPhase[phaseLength-1];
         
         if(phaseLength===1){
@@ -79,9 +79,9 @@ export default class Cohortpanel extends React.Component {
        
 		return (<div>
 			        { this.state.phase.length === 1 && <button onClick={this.switchClickHandler.bind(this)}> { this.state.phase[0]===0?'Keeg Map':'Volcano Plot' }   </button>}
-					<h3 id='title'>{ this.state.phase.length > 1 && <button onClick={this.backwardClickHandler.bind(this) }>  { '<<' }</button>} { this.state.plot.title }</h3>
-					<Canvas width={this.props.width} height ={this.props.height} dataset={this.state.plot.data} onClick={this.forwardClickHandler.bind(this)}/>
-			   </div>)
+					     <h3 id='title'>{ this.state.phase.length > 1 && <button onClick={this.backwardClickHandler.bind(this) }>  { '<<' }</button>} { this.state.plot.title }</h3>
+					     <Canvas width={this.props.width} height ={this.props.height} dataset={this.state.plot.data} onClick={this.forwardClickHandler.bind(this)}/>
+			     </div>)
 
 	}
 }

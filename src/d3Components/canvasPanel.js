@@ -13,20 +13,17 @@ var canvasPanel = function(_selection){
               // .style('dominant-baseline','hanging')
               // .style('text-anchor','start');
 
-
-
     _selection.append('svg')
               .attr('width',width)  
               .attr('height',height)
               .selectAll('g')
-    		  .data((d)=>d.data)
-    		  .enter()
-    		  .append('g')
-    		  .each(function(d){
-    		  	d3.select(this).call(vAtom)
-    		  })
+        		  .data((d)=>d.data)
+        		  .enter()
+        		  .append('g')
+        		  .each(function(d){
+        		  	 d3.select(this).call(vAtom)
+        		  })
               .on('click',clickEvent);
-
 
 }
 
