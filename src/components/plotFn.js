@@ -82,7 +82,7 @@ export var keggPlot = function(metaData,width,height){
         let yFn = d3.scaleLinear().range([top,bottom]).domain([yMin,yMax]);
 
 
-        return keggMap.map((g,i)=>{
+        return {plot:keggMap.map((g,i)=>{
            let item = {}
            let nodeDetail = metaData.filter((d)=>d.kegg_id===g.name)
            item.key = 'k'+i;
@@ -105,7 +105,7 @@ export var keggPlot = function(metaData,width,height){
 
 
            return item;
-          })
+          })}
 
 }
 
@@ -136,26 +136,29 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
        //vocalno plot need 0 references line 
        let refline = [...vref.map((v,index)=>({key:'vline'+index,
                        location:{x:xFn(v),y:bottom},
-                       shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
+                       shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'3px',strokeDasharray:"5, 5" }
                       })),
                       {key:'pVline',
                        label: pvref,
                        tick : {x:(right-left),dominantBaseline:'text-after-edge',textAnchor:'end', fontSize:'1em',fill:'#000000'},
                        location:{x:left,y:yFn(pvref)},
-                       shape:{d:'M 0,0 L '+(right-left)+',0',stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }
+                       shape:{d:'M 0,0 L '+(right-left)+',0',stroke:'#000000',strokeWidth:'3px',strokeDasharray:"5, 5" }
                       }
                       ]
        let axis = [...axisFn(10,xFn,bottom,true,'mean_ratio'),...axisFn(10,yFn,left,false,'logPval')];
-       return [...refline,...plotData.map((t)=>{
-        let item = {};
-        item.key = 'v'+t.id;
-        item.id = t.id;
-        item.type = t.type;
-        item.label = ['name :'+t.metabolite,'Kegg_id:'+t.kegg_id,'mean_ration :'+t.mean_ratio,'logPValue :'+t.logPval].join(';');
-        item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
-        item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio,t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
-        return item
-       }),...axis]
+       return {
+               referenceLines:[...refline],
+               plot:[...plotData.map((t)=>{
+                    let item = {};
+                    item.key = 'v'+t.id;
+                    item.id = t.id;
+                    item.type = t.type;
+                    item.label = ['name :'+t.metabolite,'Kegg_id:'+t.kegg_id,'mean_ration :'+t.mean_ratio,'logPValue :'+t.logPval].join(';');
+                    item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
+                    item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio,t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
+                    return item})],
+               axis:[...axis]
+              }
 
     }
 
@@ -205,16 +208,17 @@ export var scatterPlot = function(plotData,width,height){
 
     
     let axis = [...xaxis,...axisFn(10,yFn,left,false,'areatop')];
-    return [...dataSet.map((t)=>{
-      let item = {}
-      item.key = t.id;
-      item.id = t.id;
-      item.type = t.type;
-      item.label = t.id;
-      item.location= {x:xFn(t.id),y:yFn(t.y)}
-      item.shape={d:drawCircle(circle_ratio),fill:color(t.id),strokeWidth:'1px'}
-      return item;
-    }),...axis]
+    return {
+      plot:[...dataSet.map((t)=>{
+            let item = {}
+            item.key = t.id;
+            item.id = t.id;
+            item.type = t.type;
+            item.label = t.id;
+            item.location= {x:xFn(t.id),y:yFn(t.y)}
+            item.shape={d:drawCircle(circle_ratio),fill:color(t.id),strokeWidth:'1px'}
+            return item;})],
+      axis:[...axis]}
   }
 
   export var linePlot=function(plotData,width,height){
@@ -239,16 +243,15 @@ export var scatterPlot = function(plotData,width,height){
     let refline = plotData.map((d)=>{return {key:'vline',location:{x:xScale(d.ref),y:bottom},shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'1px',strokeDasharray:"5, 5" }}})
     let axis = [...axisFn(10,xScale,bottom,true,'rt'),...axisFn(10,yScale,left,false,'intensity')];
     
-
-
-    return [...refline,...plotData.map((t)=>{
-      let item = {}
-      item.key = t.id;
-      item.id = t.id
-      item.label = t.name
-      item.location= {x:0,y:0}
-      item.shape={d:lineFunction(t.values),stroke:color(t.id),strokeWidth:'2px',fill:'none'}
-      return item;
-      
-    }),...axis,]
+    return {
+      referenceLines:[...refline],
+      plot:[...plotData.map((t)=>{
+            let item = {}
+            item.key = t.id;
+            item.id = t.id
+            item.label = t.name
+            item.location= {x:0,y:0}
+            item.shape={d:lineFunction(t.values),stroke:color(t.id),strokeWidth:'2px',fill:'none'}
+            return item;})],
+      axis:[...axis]}
   }

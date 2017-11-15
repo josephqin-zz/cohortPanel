@@ -3,6 +3,7 @@ import canvasPanel from './canvasPanel';
 import {volcanoPlot,scatterPlot,keggPlot,linePlot} from '../components/plotFn'
 import axios from 'axios';
 
+
 var width = 1000,
     height = 500,
     plotType = 'volcano',

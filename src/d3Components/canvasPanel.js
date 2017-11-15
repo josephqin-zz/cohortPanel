@@ -13,17 +13,41 @@ var canvasPanel = function(_selection){
               // .style('dominant-baseline','hanging')
               // .style('text-anchor','start');
 
-    _selection.append('svg')
+   let g =  _selection.append('svg')
               .attr('width',width)  
               .attr('height',height)
               .selectAll('g')
-        		  .data((d)=>d.data)
+              .data((d)=>d3.entries(d.data))
         		  .enter()
         		  .append('g')
-        		  .each(function(d){
+              .attr('id',(d)=>d.key)
+            
+            g.selectAll('g')
+             .data((d)=>d.value)
+             .enter()
+             .append('g')
+        		 .each(function(d){
         		  	 d3.select(this).call(vAtom)
-        		  })
-              .on('click',clickEvent);
+        		   })
+             .on('click',clickEvent);
+  //add drag behavior
+  let pVline = g.select('#pVline')
+  if(!pVline.empty()){
+    pVline.call(d3.drag()
+          .on("drag", dragged)
+          )
+
+    function dragged(d) {
+      console.log(d)
+      console.log(d3.evnet)
+        // d3.select(this).attr('transform',d3.zoomIdentity.translate(d.location.x,d3.event.y));
+    }
+    
+
+
+  }
+
+            
 
 }
 

@@ -12,7 +12,7 @@ var vAtom = function(_selection){
     let dataset = _selection.data()[0]
     const textStyle = !dataset.tick?{ dominantBaseline:'hanging',textAnchor:'start', fontSize:'.6em',fill:'#000000'}:dataset.tick;
 	// const content = ( this.state.x && this.props.label )?this.props.label.toString().split(';').map((c,i)=><tspan key={i} x={this.state.x} y={this.state.y+10*i}>{c}</tspan>):null;
-	let atomNode = _selection.append('g').attr('name','node')
+	let atomNode = _selection.append('g').attr('id',(d)=>d.key)
 	atomNode.attr('transform',d3.zoomIdentity.translate(dataset.location.x,dataset.location.y))
     render(atomNode.append('path'),dataset.shape)
     if(dataset.tick){render(atomNode.append('text').text(dataset.label),textStyle)}
