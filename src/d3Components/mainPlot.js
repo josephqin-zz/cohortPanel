@@ -7,7 +7,7 @@ var width = 1000,
 
 var clickEvent = (d)=>console.log(d);
 
-var canvasPanel = function(_selection){
+var mainPlot = function(_selection){
     
     _selection.append('h2')
               .text((d)=>d.title)
@@ -31,25 +31,33 @@ var canvasPanel = function(_selection){
         		  	 d3.select(this).call(vAtom)
         		   })
              .on('click',clickEvent);
+  //add drag behavior
+  let pVline = vatom.filter((d)=>d.key==='pVline').select('g')
+  if(!pVline.empty()){
+    pVline.call(d3.drag()
+          .on("drag", function(d){
+              d3.select(this).attr('transform',d3.zoomIdentity.translate(d.location.x,currentEvent.y));
+              }))
+      }
 }
 
-canvasPanel.setClick = function(fn){
+mainPlot.setClick = function(fn){
     if(!arguments.length) return clickEvent;
     clickEvent = fn
     return this;
 }
 
-canvasPanel.setHeight = function(data){
+mainPlot.setHeight = function(data){
   if(!arguments.length) return height;
   height = data;
   return this;
 }
 
-canvasPanel.setWidth = function(data){
+mainPlot.setWidth = function(data){
   if(!arguments.length) return dataset;
   width = data;
   return this;
 }
 
 
-export default canvasPanel;
+export default mainPlot;

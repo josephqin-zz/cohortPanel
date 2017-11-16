@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import canvasPanel from './canvasPanel';
+import mainPlot from './mainPlot';
 import {volcanoPlot,scatterPlot,keggPlot,linePlot} from '../components/plotFn'
 import axios from 'axios';
 
@@ -52,7 +53,9 @@ var cohortPanel = function(_selection){
     
     plotsData = [plotType==='volcano'?{title:'volcano plot',data:volcanoPlot(dataset,width,height)}:{title:'Kegg Map',data:keggPlot(dataset,width,height)}]
 
-    
+    _selection.append('div')
+
+
     dispatcher.on('updateUI',function(plots){
       _selection.selectAll('*').remove();
       _selection.attr('height',height*plots.length)
