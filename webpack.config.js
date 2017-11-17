@@ -11,14 +11,21 @@ module.exports = {
 		path:OUTPUT,
 		library:'cohortPanel',
 		libraryTarget:'umd',
-		filename:'cohortPanel.js'
+		filename:'cohortPanelD3.js'
+    },
+    module: {
+	    loaders: [
+	      {
+	        test: /\.jsx?$/,
+	        loader: 'babel-loader',
+	        exclude: /node_modules/,
+	        query: {
+	          cacheDirectory: true,
+	          presets: ['es2015'],
+	         
+	        }
+	      }
+	    ]
+  }
 
-	},
-	module:{
-		loaders:[{
-			test : /\.jsx?/,
-			include: SRC,
-	        loader: "babel-loader",
-		}]
-	}
 };

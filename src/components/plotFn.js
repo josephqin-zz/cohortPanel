@@ -126,11 +126,12 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
        let yMin = d3.min(plotData.map((d)=>d.logPval));
        let xFn = d3.scaleLinear().range([left,right]).domain([xMin,xMax]).nice();
        let yFn = d3.scaleLinear().range([bottom,top]).domain([0,yMax]).nice();
-       let color = (x,y)=>{
-           if ( y>=pvref && x<=vref[0] ) return 'blue';
-           if ( y>=pvref && x>=vref[1] ) return 'red';
-           return 'grey';
-       }
+       let color = (x,y)=> x>=0?'red':'blue';
+       // let color = (x,y)=>{
+       //     if ( y>=pvref && x<=vref[0] ) return 'blue';
+       //     if ( y>=pvref && x>=vref[1] ) return 'red';
+       //     return 'grey';
+       // }
        // let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
        
        //vocalno plot need 0 references line 
@@ -139,7 +140,7 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
                        shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'3px',strokeDasharray:"5, 5" }
                       })),
                       {key:'pVline',
-                       label: pvref,
+                       label: 'pValue',
                        tick : {x:(right-left),dominantBaseline:'text-after-edge',textAnchor:'end', fontSize:'1em',fill:'#000000'},
                        location:{x:left,y:yFn(pvref)},
                        shape:{d:'M 0,0 L '+(right-left)+',0',stroke:'#000000',strokeWidth:'3px',strokeDasharray:"5, 5" }
@@ -153,9 +154,10 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
                     item.key = 'v'+t.id;
                     item.id = t.id;
                     item.type = t.type;
+                    item.defaultColor = color(t.mean_ratio);
                     item.label = ['name :'+t.metabolite,'Kegg_id:'+t.kegg_id,'mean_ration :'+t.mean_ratio,'logPValue :'+t.logPval].join(';');
                     item.location={x:xFn(t.mean_ratio),y:yFn(t.logPval)};
-                    item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio,t.logPval),stroke:'#ffffff',strokeWidth:'1px'}
+                    item.shape={d:drawCircle(circle_ratio),fill:color(t.mean_ratio),stroke:'#ffffff',strokeWidth:'1px'}
                     return item})],
                axis:[...axis]
               }

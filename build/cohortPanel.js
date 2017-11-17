@@ -9900,7 +9900,7 @@ function transform(node) {
 
 
 Object.defineProperty(exports, "__esModule", {
-       value: true
+    value: true
 });
 
 var _d = __webpack_require__(18);
@@ -9914,57 +9914,57 @@ function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 var upperReg = /[A-Z]/;
 
 var attrVert = function attrVert(d) {
-       return Array.from(d).map(function (d) {
-              return d;
-       }).reduce(function (acc, d) {
-              return [].concat(_toConsumableArray(acc), [upperReg.test(d) ? '-' + d.toLowerCase() : d]);
-       }, []).join('');
+    return Array.from(d).map(function (d) {
+        return d;
+    }).reduce(function (acc, d) {
+        return [].concat(_toConsumableArray(acc), [upperReg.test(d) ? '-' + d.toLowerCase() : d]);
+    }, []).join('');
 };
 
 var render = function render(node, shape) {
-       return Object.keys(shape).forEach(function (d) {
-              return node.attr(attrVert(d), shape[d]);
-       });
+    return Object.keys(shape).forEach(function (d) {
+        return node.attr(attrVert(d), shape[d]);
+    });
 };
 
 var vAtom = function vAtom(_selection) {
-       var dataset = _selection.data()[0];
-       var textStyle = !dataset.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : dataset.tick;
-       // const content = ( this.state.x && this.props.label )?this.props.label.toString().split(';').map((c,i)=><tspan key={i} x={this.state.x} y={this.state.y+10*i}>{c}</tspan>):null;
-       var atomNode = _selection.append('g').attr('id', function (d) {
-              return d.key;
-       });
-       atomNode.attr('transform', d3.zoomIdentity.translate(dataset.location.x, dataset.location.y));
-       render(atomNode.append('path'), dataset.shape);
-       if (dataset.tick) {
-              render(atomNode.append('text').text(dataset.label), textStyle);
-       }
-       var tooltip = _selection.append('text').attr('name', 'tooltip');
-       render(tooltip, textStyle);
-       _selection.node().addEventListener('mouseover', function (e) {
+    var dataset = _selection.data()[0];
+    var textStyle = !dataset.tick ? { dominantBaseline: 'hanging', textAnchor: 'start', fontSize: '.6em', fill: '#000000' } : dataset.tick;
+    // const content = ( this.state.x && this.props.label )?this.props.label.toString().split(';').map((c,i)=><tspan key={i} x={this.state.x} y={this.state.y+10*i}>{c}</tspan>):null;
+    var atomNode = _selection.append('g').attr('id', function (d) {
+        return d.key;
+    });
+    atomNode.attr('transform', d3.zoomIdentity.translate(dataset.location.x, dataset.location.y));
+    render(atomNode.append('path'), dataset.shape);
+    if (dataset.tick) {
+        render(atomNode.append('text').text(dataset.label), textStyle);
+    }
+    var tooltip = _selection.append('text').attr('name', 'tooltip');
+    render(tooltip, textStyle);
+    _selection.node().addEventListener('mouseover', function (e) {
 
-              var label = _selection.data()[0].label;
+        var label = _selection.data()[0].label;
 
-              if (!dataset.tick && label) {
+        if (!dataset.tick && label) {
 
-                     tooltip.selectAll('tspan').data(label.toString().split(';')).enter().append('tspan').text(function (t) {
-                            return t;
-                     }).attr('x', e.offsetX + 5).attr('y', function (t, i) {
-                            return e.offsetY + 10 * i;
-                     });
-              };
-       });
+            tooltip.selectAll('tspan').data(label.toString().split(';')).enter().append('tspan').text(function (t) {
+                return t;
+            }).attr('x', e.offsetX + 5).attr('y', function (t, i) {
+                return e.offsetY + 10 * i;
+            });
+        };
+    });
 
-       _selection.node().addEventListener('mouseout', function (e) {
+    _selection.node().addEventListener('mouseout', function (e) {
 
-              tooltip.selectAll('*').remove();
-       });
+        tooltip.selectAll('*').remove();
+    });
 
-       // _selection.node().addEventListener('click',(e)=>{
+    // _selection.node().addEventListener('click',(e)=>{
 
-       //         clickEvent(_selection.data()[0])
+    //         clickEvent(_selection.data()[0])
 
-       // })
+    // })
 };
 
 exports.default = vAtom;
@@ -23700,7 +23700,7 @@ function nopropagation() {
 
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+    value: true
 });
 
 var _d = __webpack_require__(18);
@@ -23736,88 +23736,88 @@ var width = 1000,
 var dispatcher = d3.dispatch('updateUI');
 
 var forwardClickHandler = function forwardClickHandler(d) {
-  var _this = this;
+    var _this = this;
 
-  // console.log(d);
-  var metadata = dataset;
-  var plotData = {};
-  if (d.type === 'metabolite') {
-    plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' + metadata[d.id].kegg_id + ')';
-    plotData.data = (0, _plotFn.scatterPlot)(metadata[d.id], width, height);
-    plotsData = [plotData];
-    dispatcher.call('updateUI', this, plotsData);
-  } else {
-    _axios2.default.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids=' + d.id.toString()).then(function (res) {
-      var lines = res.data.data.values.map(function (d) {
-        var line = {};
-        line.id = 'peak' + d.peak_id;
-        line.name = d.sample_name;
-        var x = d.eic_rt.split(',').map(function (d) {
-          return Number(d);
+    // console.log(d);
+    var metadata = dataset;
+    var plotData = {};
+    if (d.type === 'metabolite') {
+        plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' + metadata[d.id].kegg_id + ')';
+        plotData.data = (0, _plotFn.scatterPlot)(metadata[d.id], width, height);
+        plotsData = [plotData];
+        dispatcher.call('updateUI', this, plotsData);
+    } else {
+        _axios2.default.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids=' + d.id.toString()).then(function (res) {
+            var lines = res.data.data.values.map(function (d) {
+                var line = {};
+                line.id = 'peak' + d.peak_id;
+                line.name = d.sample_name;
+                var x = d.eic_rt.split(',').map(function (d) {
+                    return Number(d);
+                });
+                var y = d.eic_intensity.split(',').map(function (d) {
+                    return Number(d);
+                });
+                line.values = x.map(function (t, i) {
+                    return { x: t, y: y[i] };
+                }).filter(function (c) {
+                    return c.x >= Number(d.min_rt) && c.x <= Number(d.max_rt);
+                });
+                line.ref = d.rt;
+                return line;
+            });
+            plotData.title = 'Chromatogram' + ' Peak ID: ' + res.data.data.values[0].peak_id;
+            plotData.data = (0, _plotFn.linePlot)(lines, width, height);
+            plotsData = [].concat(_toConsumableArray(plotsData.filter(function (d, i) {
+                return i < 1;
+            })), [plotData]);
+            dispatcher.call('updateUI', _this, plotsData);
         });
-        var y = d.eic_intensity.split(',').map(function (d) {
-          return Number(d);
-        });
-        line.values = x.map(function (t, i) {
-          return { x: t, y: y[i] };
-        }).filter(function (c) {
-          return c.x >= Number(d.min_rt) && c.x <= Number(d.max_rt);
-        });
-        line.ref = d.rt;
-        return line;
-      });
-      plotData.title = 'Chromatogram' + ' Peak ID: ' + res.data.data.values[0].peak_id;
-      plotData.data = (0, _plotFn.linePlot)(lines, width, height);
-      plotsData = [].concat(_toConsumableArray(plotsData.filter(function (d, i) {
-        return i < 1;
-      })), [plotData]);
-      dispatcher.call('updateUI', _this, plotsData);
-    });
-  }
+    }
 };
 
 // }
 
 var cohortPanel = function cohortPanel(_selection) {
-  _selection.selectAll('*').remove();
-  plotsData = [];
+    _selection.selectAll('*').remove();
+    plotsData = [];
 
-  _selection.append('div').attr('id', 'mainPlot').datum(plotType === 'volcano' ? { title: 'volcano plot', data: (0, _plotFn.volcanoPlot)(dataset, width, height) } : { title: 'Kegg Map', data: (0, _plotFn.keggPlot)(dataset, width, height) }).call(_mainPlot2.default.setClick(forwardClickHandler).setHeight(height).setWidth(width));
+    _selection.append('div').attr('id', 'mainPlot').datum(plotType === 'volcano' ? { title: 'volcano plot', data: (0, _plotFn.volcanoPlot)(dataset, width, height) } : { title: 'Kegg Map', data: (0, _plotFn.keggPlot)(dataset, width, height) }).call(_mainPlot2.default.setClick(forwardClickHandler).setHeight(height).setWidth(width));
 
-  var restplots = _selection.append('div');
-  dispatcher.on('updateUI', function (plots) {
-    restplots.selectAll('*').remove();
+    var restplots = _selection.append('div');
+    dispatcher.on('updateUI', function (plots) {
+        restplots.selectAll('*').remove();
 
-    restplots.selectAll('div').data(plots).enter().append('div')
-    // .attr('transform',(d,i)=>d3.zoomIdentity.translate(0,height*i))
-    .each(function (d) {
-      d3.select(this).call(_canvasPanel2.default.setClick(forwardClickHandler).setHeight(height).setWidth(width));
+        restplots.selectAll('div').data(plots).enter().append('div')
+        // .attr('transform',(d,i)=>d3.zoomIdentity.translate(0,height*i))
+        .each(function (d) {
+            d3.select(this).call(_canvasPanel2.default.setClick(forwardClickHandler).setHeight(height).setWidth(width));
+        });
     });
-  });
 };
 
 cohortPanel.bindData = function (data) {
-  if (!arguments.length) return dataset;
-  dataset = data;
-  return this;
+    if (!arguments.length) return dataset;
+    dataset = data;
+    return this;
 };
 
 cohortPanel.setHeight = function (data) {
-  if (!arguments.length) return height;
-  height = data;
-  return this;
+    if (!arguments.length) return height;
+    height = data;
+    return this;
 };
 
 cohortPanel.setWidth = function (data) {
-  if (!arguments.length) return dataset;
-  width = data;
-  return this;
+    if (!arguments.length) return dataset;
+    width = data;
+    return this;
 };
 
 cohortPanel.setType = function (data) {
-  if (!arguments.length) return plotType;
-  plotType = data;
-  return this;
+    if (!arguments.length) return plotType;
+    plotType = data;
+    return this;
 };
 
 exports.default = cohortPanel;
@@ -23901,7 +23901,7 @@ exports.default = canvasPanel;
 
 
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
 
 var _d = __webpack_require__(18);
@@ -23917,61 +23917,117 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 var width = 1000,
-    height = 500;
+    height = 500,
+    boundary = { y: 0, x: [] },
+    dispatch = d3.dispatch('setboundry');
 
 var clickEvent = function clickEvent(d) {
-    return console.log(d);
+  return console.log(d);
 };
 
 var mainPlot = function mainPlot(_selection) {
 
-    _selection.append('h2').text(function (d) {
-        return d.title;
-    });
-    // .style('dominant-baseline','hanging')
-    // .style('text-anchor','start');
+  _selection.append('h2').text(function (d) {
+    return d.title;
+  });
+  // .style('dominant-baseline','hanging')
+  // .style('text-anchor','start');
+  var wrapper = _selection.append('div').attr('id', 'wrapper').style('display', 'inline-grid').style('grid-template-columns', width.toString() + 'px ' + (width * 1 / 3).toString() + 'px ' + (width * 1 / 3).toString() + 'px');
 
-    var g = _selection.append('svg').attr('width', width).attr('height', height).selectAll('g').data(function (d) {
-        return d3.entries(d.data);
-    }).enter().append('g').attr('id', function (d) {
-        return d.key;
+  var svg = wrapper.append('div').append('svg').attr('width', width).attr('height', height);
+
+  var g = svg.selectAll('g').data(function (d) {
+    return d3.entries(d.data);
+  }).enter().append('g').attr('id', function (d) {
+    return d.key;
+  });
+
+  var vatom = g.selectAll('g').data(function (d) {
+    return d.value;
+  }).enter().append('g').each(function (d) {
+    d3.select(this).call(_vAtom2.default);
+  }).on('click', clickEvent);
+  if (_selection.data()[0].title === 'volcano plot') {
+    var blueList = wrapper.append('div').attr('id', 'blueList').style('max-height', height + 'px').style('overflow', 'scroll').style('color', 'blue');
+    var redList = wrapper.append('div').attr('id', 'redList').style('max-height', height + 'px').style('overflow', 'scroll').style('color', 'red');
+
+    boundary.y = d3.select('#pVline').data()[0].location.y;
+    boundary.x = d3.select('#referenceLines').data()[0].value.filter(function (d) {
+      return d.key !== 'pVline';
+    }).map(function (d) {
+      return d.location.x;
+    }).sort(function (a, b) {
+      return a - b;
+    });
+    var circles = d3.select('#plot').selectAll('path');
+    //setBoundary
+    dispatch.on('setboundry', function () {
+      var _this = this;
+
+      circles.style('fill', function (d) {
+        return d.location.y <= _this.y && (d.location.x <= d3.min(_this.x) || d.location.x >= d3.max(_this.x)) ? d.defaultColor : 'grey';
+      });
+      var shownodes = circles.data().filter(function (d) {
+        return d.location.y <= _this.y && (d.location.x <= d3.min(_this.x) || d.location.x >= d3.max(_this.x));
+      });
+
+      blueList.selectAll('*').remove();
+      redList.selectAll('*').remove();
+      blueList.selectAll('p').data(shownodes.filter(function (d) {
+        return d.defaultColor === 'blue';
+      }).map(function (d) {
+        return d.label.split(';')[0].split(':')[1];
+      })).enter().append('p').text(function (d) {
+        return d;
+      });
+      redList.selectAll('p').data(shownodes.filter(function (d) {
+        return d.defaultColor === 'red';
+      }).map(function (d) {
+        return d.label.split(';')[0].split(':')[1];
+      })).enter().append('p').text(function (d) {
+        return d;
+      });
     });
 
-    var vatom = g.selectAll('g').data(function (d) {
-        return d.value;
-    }).enter().append('g').each(function (d) {
-        d3.select(this).call(_vAtom2.default);
-    }).on('click', clickEvent);
+    dispatch.call('setboundry', boundary);
+
     //add drag behavior
     d3.select('#pVline').call(d3.drag().on("drag", function (d) {
-        d3.select(this).attr('transform', d3.zoomIdentity.translate(d.location.x, _d.event.y));
+      boundary.y = _d.event.y;
+      d3.select(this).attr('transform', d3.zoomIdentity.translate(d.location.x, _d.event.y));
+      dispatch.call('setboundry', boundary);
     }));
 
     d3.select('#vline0').call(d3.drag().on("drag", function (d) {
-        d3.select(this).attr('transform', d3.zoomIdentity.translate(_d.event.x, d.location.y));
+      boundary.x[0] = _d.event.x;
+      d3.select(this).attr('transform', d3.zoomIdentity.translate(_d.event.x, d.location.y));
+      dispatch.call('setboundry', boundary);
     }));
 
     d3.select('#vline1').call(d3.drag().on("drag", function (d) {
-        d3.select(this).attr('transform', d3.zoomIdentity.translate(_d.event.x, d.location.y));
+      boundary.x[1] = _d.event.x;
+      d3.select(this).attr('transform', d3.zoomIdentity.translate(_d.event.x, d.location.y));
+      dispatch.call('setboundry', boundary);
     }));
+  }
 };
 
 mainPlot.setClick = function (fn) {
-    if (!arguments.length) return clickEvent;
-    clickEvent = fn;
-    return this;
+  if (!arguments.length) return clickEvent;
+  clickEvent = fn;
+  return this;
 };
 
 mainPlot.setHeight = function (data) {
-    if (!arguments.length) return height;
-    height = data;
-    return this;
+  if (!arguments.length) return height;
+  height = data;
+  return this;
 };
 
 mainPlot.setWidth = function (data) {
-    if (!arguments.length) return dataset;
-    width = data;
-    return this;
+  if (!arguments.length) return dataset;
+  width = data;
+  return this;
 };
 
 exports.default = mainPlot;
@@ -24160,10 +24216,13 @@ var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, he
     var xFn = d3.scaleLinear().range([left, right]).domain([xMin, xMax]).nice();
     var yFn = d3.scaleLinear().range([bottom, top]).domain([0, yMax]).nice();
     var color = function color(x, y) {
-        if (y >= pvref && x <= vref[0]) return 'blue';
-        if (y >= pvref && x >= vref[1]) return 'red';
-        return 'grey';
+        return x >= 0 ? 'red' : 'blue';
     };
+    // let color = (x,y)=>{
+    //     if ( y>=pvref && x<=vref[0] ) return 'blue';
+    //     if ( y>=pvref && x>=vref[1] ) return 'red';
+    //     return 'grey';
+    // }
     // let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
 
     //vocalno plot need 0 references line 
@@ -24173,7 +24232,7 @@ var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, he
             shape: { d: 'M 0,0 L 0,-' + bottom, stroke: '#000000', strokeWidth: '3px', strokeDasharray: "5, 5" }
         };
     })), [{ key: 'pVline',
-        label: pvref,
+        label: 'pValue',
         tick: { x: right - left, dominantBaseline: 'text-after-edge', textAnchor: 'end', fontSize: '1em', fill: '#000000' },
         location: { x: left, y: yFn(pvref) },
         shape: { d: 'M 0,0 L ' + (right - left) + ',0', stroke: '#000000', strokeWidth: '3px', strokeDasharray: "5, 5" }
@@ -24186,9 +24245,10 @@ var volcanoPlot = exports.volcanoPlot = function volcanoPlot(plotData, width, he
             item.key = 'v' + t.id;
             item.id = t.id;
             item.type = t.type;
+            item.defaultColor = color(t.mean_ratio);
             item.label = ['name :' + t.metabolite, 'Kegg_id:' + t.kegg_id, 'mean_ration :' + t.mean_ratio, 'logPValue :' + t.logPval].join(';');
             item.location = { x: xFn(t.mean_ratio), y: yFn(t.logPval) };
-            item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio, t.logPval), stroke: '#ffffff', strokeWidth: '1px' };
+            item.shape = { d: drawCircle(circle_ratio), fill: color(t.mean_ratio), stroke: '#ffffff', strokeWidth: '1px' };
             return item;
         }))),
         axis: [].concat(_toConsumableArray(axis))
