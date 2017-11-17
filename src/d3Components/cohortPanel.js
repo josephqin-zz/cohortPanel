@@ -20,7 +20,7 @@ var forwardClickHandler = function(d){
     if(d.type==='metabolite'){
          plotData.title = 'scatter plot ' + metadata[d.id].metabolite + '(' +metadata[d.id].kegg_id+')' ;
          plotData.data = scatterPlot(metadata[d.id],width,height);
-         plotsData = [...plotsData.filter((d,i)=>i<1),plotData]
+         plotsData = [plotData]
          dispatcher.call('updateUI',this,plotsData);
     }else{
         axios.get('http://10.4.1.60/mtb/getData.php?type=mtb_chromat&peak_ids='+d.id.toString())
@@ -39,7 +39,7 @@ var forwardClickHandler = function(d){
                 });
                 plotData.title = 'Chromatogram' + ' Peak ID: '+res.data.data.values[0].peak_id;
                 plotData.data = linePlot(lines,width,height);
-                plotsData=[...plotsData.filter((d,i)=>i<2),plotData]
+                plotsData=[...plotsData.filter((d,i)=>i<1),plotData]
                 dispatcher.call('updateUI',this,plotsData);
 
               })
@@ -50,16 +50,19 @@ var forwardClickHandler = function(d){
 // }
 
 var cohortPanel = function(_selection){
-    
-    plotsData = [plotType==='volcano'?{title:'volcano plot',data:volcanoPlot(dataset,width,height)}:{title:'Kegg Map',data:keggPlot(dataset,width,height)}]
+    _selection.selectAll('*').remove()
+    plotsData = []
 
     _selection.append('div')
+              .attr('id','mainPlot')
+              .datum(plotType==='volcano'?{title:'volcano plot',data:volcanoPlot(dataset,width,height)}:{title:'Kegg Map',data:keggPlot(dataset,width,height)})
+              .call(mainPlot.setClick(forwardClickHandler).setHeight(height).setWidth(width))
 
-
+    const restplots = _selection.append('div')
     dispatcher.on('updateUI',function(plots){
-      _selection.selectAll('*').remove();
-      _selection.attr('height',height*plots.length)
-      _selection.selectAll('div')
+      restplots.selectAll('*').remove();
+      
+      restplots.selectAll('div')
               .data(plots)
               .enter()
               .append('div')
@@ -70,7 +73,7 @@ var cohortPanel = function(_selection){
               })
     })
 
-    dispatcher.call('updateUI',this,plotsData)
+    
     
 }
 

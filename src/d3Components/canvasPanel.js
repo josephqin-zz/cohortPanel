@@ -23,14 +23,16 @@ var canvasPanel = function(_selection){
         		  .append('g')
               .attr('id',(d)=>d.key)
             
-    let vatom = g.selectAll('g')
-             .data((d)=>d.value)
-             .enter()
-             .append('g')
-        		 .each(function(d){
-        		  	 d3.select(this).call(vAtom)
-        		   })
-             .on('click',clickEvent);
+  let vatom = g.selectAll('g')
+               .data((d)=>d.value)
+               .enter()
+               .append('g')
+          		 .each(function(d){
+          		  	 d3.select(this).call(vAtom)
+          		   })
+               .on('click',clickEvent);
+
+   
 }
 
 canvasPanel.setClick = function(fn){

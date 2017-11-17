@@ -32,13 +32,25 @@ var mainPlot = function(_selection){
         		   })
              .on('click',clickEvent);
   //add drag behavior
-  let pVline = vatom.filter((d)=>d.key==='pVline').select('g')
-  if(!pVline.empty()){
-    pVline.call(d3.drag()
-          .on("drag", function(d){
-              d3.select(this).attr('transform',d3.zoomIdentity.translate(d.location.x,currentEvent.y));
-              }))
-      }
+  d3.select('#pVline')
+                 .call(d3.drag()
+                         .on("drag", function(d){
+                            d3.select(this).attr('transform',d3.zoomIdentity.translate(d.location.x,currentEvent.y));
+                            }))
+
+  d3.select('#vline0')
+                 .call(d3.drag()
+                         .on("drag", function(d){
+                            d3.select(this).attr('transform',d3.zoomIdentity.translate(currentEvent.x,d.location.y));
+                            }))
+
+  d3.select('#vline1')
+                 .call(d3.drag()
+                         .on("drag", function(d){
+                            d3.select(this).attr('transform',d3.zoomIdentity.translate(currentEvent.x,d.location.y));
+                            }))               
+
+  
 }
 
 mainPlot.setClick = function(fn){
