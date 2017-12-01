@@ -6,6 +6,7 @@ const margin = {left:30,right:20,top:20,bottom:20};
 var drawCircle = (radius) => 'M '+(0-radius)+' '+0+' a '+radius+' '+radius+', 0, 1, 0, '+(radius*2)+' '+0+' '+'a '+radius+' '+radius+', 0, 1, 0, '+(-radius*2)+' '+0;
 var drawLine = (range,direction) => 'M 0,0 '+direction+' '+Math.abs(range[1]-range[0]);
 
+// create xAxis or yAxis 
 var axisFn = function(ticks,scalefn,position,xaxis=true,name=null){
     
     let pointfn = d3.scalePoint().range(scalefn.range()).domain(d3.range(ticks));
@@ -23,6 +24,7 @@ var axisFn = function(ticks,scalefn,position,xaxis=true,name=null){
 
     //select the right format for label
     let format = d3.median(scalefn.domain())>1000?d3.format('.2s'):d3.format('.2f')
+    
     return [...d3.range(ticks).map((t)=>{
       let item = {}
       item.key = (xaxis?'xtick':'ytick')+t;
@@ -42,9 +44,6 @@ var axisFn = function(ticks,scalefn,position,xaxis=true,name=null){
 }
 
 
-
-
-
 var getNode = function(peakids,vals,cohort){
       let peakid = peakids.split(',');
       let val = vals.split(',');
@@ -59,6 +58,7 @@ var getNode = function(peakids,vals,cohort){
       })
     }
 
+//generate kegg map plot 
 export var keggPlot = function(metaData,width,height){
         //set canvas boundry
         let left = 0;
@@ -110,7 +110,7 @@ export var keggPlot = function(metaData,width,height){
 }
 
 
-  	
+//generate volcanoPlot  	
 export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
        //set canvas boundry
        let left = margin.left;
@@ -134,7 +134,7 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
        // }
        // let color = d3.scaleSequential().domain([yMin*xMin,yMax*xMax]).interpolator(d3.interpolateRainbow);
        
-       //vocalno plot need 0 references line 
+       //vocalno plot need x=0 references line and pValue line 
        let refline = [...vref.map((v,index)=>({key:'vline'+index,
                        location:{x:xFn(v),y:bottom},
                        shape:{d:'M 0,0 L 0,-'+bottom,stroke:'#000000',strokeWidth:'3px',strokeDasharray:"5, 5" }
@@ -164,6 +164,7 @@ export var volcanoPlot = function(plotData,width,height,pvref=1.3,vref=[-1,1]){
 
     }
 
+//generate Scatter Plot
 export var scatterPlot = function(plotData,width,height){
     let left = margin.left;
     let right = width-margin.right;
@@ -223,7 +224,9 @@ export var scatterPlot = function(plotData,width,height){
       axis:[...axis]}
   }
 
-  export var linePlot=function(plotData,width,height){
+//generate line chart
+//plotData = {id,name,values:[{x,y}...],ref:reference line's x coordinate}
+export var linePlot=function(plotData,width,height){
     let left = margin.left;
     let right = width-margin.right;
     let top = margin.top;

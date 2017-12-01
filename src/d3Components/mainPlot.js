@@ -12,25 +12,30 @@ var clickEvent = (d)=>console.log(d);
 
 var mainPlot = function(_selection){
     
-    
+    //append Title Name 
     _selection.append('h2')
               .text((d)=>d.title)
               // .style('dominant-baseline','hanging')
               // .style('text-anchor','start');
+   
+   //css-grid setting
    const wrapper = _selection.append('div').attr('id','wrapper')
                              .style('display','inline-grid')
                              .style('grid-template-columns',width.toString()+'px '+(width*1/3).toString()+'px '+(width*1/3).toString()+'px')
-
+   
+   //append SVG DOM object 
    const svg = wrapper.append('div').append('svg')
               .attr('width',width)  
               .attr('height',height)
-
+   
+   //bind data
    const g = svg.selectAll('g')
                 .data((d)=>d3.entries(d.data))
           		  .enter()
           		  .append('g')
                 .attr('id',(d)=>d.key)
-            
+  
+  //renver visualization Atom          
   const vatom = g.selectAll('g')
              .data((d)=>d.value)
              .enter()
@@ -39,14 +44,17 @@ var mainPlot = function(_selection){
         		  	 d3.select(this).call(vAtom)
         		   })
              .on('click',clickEvent);
+  
+  //create blueNode and RedNode List if current plot is volcano plot
   if(_selection.data()[0].title==='volcano plot'){
-     const blueList = wrapper.append('div').attr('id','blueList').style('max-height',height+'px').style('overflow','scroll').style('color','blue')
+  const blueList = wrapper.append('div').attr('id','blueList').style('max-height',height+'px').style('overflow','scroll').style('color','blue')
   const redList = wrapper.append('div').attr('id','redList').style('max-height',height+'px').style('overflow','scroll').style('color','red')          
 
   boundary.y = d3.select('#pVline').data()[0].location.y
   boundary.x = d3.select('#referenceLines').data()[0].value.filter((d)=>d.key!=='pVline').map((d)=>d.location.x).sort((a,b)=>a-b)
   const circles = d3.select('#plot').selectAll('path')
-  //setBoundary
+  
+  //set node filter Condation and change the Blue and Read accordingly
   dispatch.on('setboundry',function(){
     circles.style('fill',(d)=>(d.location.y <= this.y && (d.location.x <= d3.min(this.x) || d.location.x >= d3.max(this.x)))?d.defaultColor:'grey')
     let shownodes = circles.data().filter((d)=>(d.location.y <= this.y && (d.location.x <= d3.min(this.x) || d.location.x >= d3.max(this.x))))
@@ -59,7 +67,7 @@ var mainPlot = function(_selection){
 
   dispatch.call('setboundry',boundary)
 
-  //add drag behavior
+  //add drag behavior for each references line
   d3.select('#pVline')
                  .call(d3.drag()
                          .on("drag", function(d){

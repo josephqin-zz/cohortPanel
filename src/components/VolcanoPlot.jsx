@@ -8,8 +8,6 @@ export default class Volcanoplot extends React.Component{
     	
     }
 
-   
-
     render(){
 		const atomList= this.props.dataset.map((p)=><Vatom key={p.key} onClick = { ()=>this.props.onClick(p) } {...p} />)
 		

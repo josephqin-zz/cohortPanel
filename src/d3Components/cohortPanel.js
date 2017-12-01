@@ -1,3 +1,4 @@
+// this is the root module
 import * as d3 from 'd3'
 import canvasPanel from './canvasPanel';
 import mainPlot from './mainPlot';
@@ -12,7 +13,11 @@ var width = 1000,
     plotsData = new Array;
 
 var dispatcher = d3.dispatch('updateUI')
-    
+
+
+//Click event handler binded to each 'circle' node. 
+//if Metabolite Node is clicked, call scatterPlot Function to create ScatterPlot
+//other then AJAX to call the chroma by peak_id to create Chromatogram by linePlot      
 var forwardClickHandler = function(d){
     // console.log(d);
     let metadata = dataset;
@@ -48,16 +53,17 @@ var forwardClickHandler = function(d){
 
 	
 // }
-
+// render cohorPanel for selection
 var cohortPanel = function(_selection){
     _selection.selectAll('*').remove()
     plotsData = []
-
+    
+    //render volcano or kegg map
     _selection.append('div')
               .attr('id','mainPlot')
               .datum(plotType==='volcano'?{title:'volcano plot',data:volcanoPlot(dataset,width,height)}:{title:'Kegg Map',data:keggPlot(dataset,width,height)})
               .call(mainPlot.setClick(forwardClickHandler).setHeight(height).setWidth(width))
-
+    //render rest map
     const restplots = _selection.append('div')
     dispatcher.on('updateUI',function(plots){
       restplots.selectAll('*').remove();
